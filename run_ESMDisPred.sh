@@ -57,7 +57,7 @@ chmod -R 777 $fetures_dir
 # # Run ESMDisPred
 cd script
 # Save Memory Usages
-$localpythonPath  systemResource.py --pid $$ --model $model &
+# $localpythonPath  systemResource.py --pid $$ --model $model &
 # # Run Dispredict3.0
 ./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
 # # Run ESM2
