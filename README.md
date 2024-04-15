@@ -5,7 +5,9 @@ ESMDisPred: Enhanced Prediction of Disordered Regions Utilizing Representations 
 # Getting Started
  
 
-These instructions will get you a copy of the project up and running on your local machine or docker container for disorder prediction. 
+These instructions will get you a copy of the project up and running on your local machine  for disorder prediction. 
+
+We have tested ESMDisPred on Ubuntu 20.04. You would need to have Docker in your local or server machine.
 
  ## Dataset
 The dataset can be found in the dataset directory. 
