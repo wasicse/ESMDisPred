@@ -1,0 +1,9 @@
+# ignore all . files and . folders
+.*
+!/.gitignore
+!/.dockerignore
+__pycache__
+_exp
+features
+temp
+MemoryUsage.csv
