@@ -1,5 +1,5 @@
 # ESMDisPred
-ESMDisPred: Improved prediction of disordered regions using representations from a protein large protein language model.
+ESMDisPred: Enhanced Prediction of Disordered Regions Utilizing Representations from a Large Protein Language Model.
 
 
 # Getting Started
