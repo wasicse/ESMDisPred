@@ -74,7 +74,7 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
         np_proba=np.array(np_proba).reshape(-1,1)
         result=np.hstack((np_index,protein_sequence, np_proba))  #,pred.reshape(-1,1)
              
-        with open(output_path+"disorder/"+pid+".caid", "w") as f:
+        with open(output_path+"disorder/"+model+"/"+pid+".caid", "w") as f:
             f.write((">"+pid+"\n"))
             fmt = '%s','%s', '%s' #, '%s'
             np.savetxt(f, result, delimiter='\t',fmt=fmt)           
@@ -87,7 +87,7 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
     df_time['sequence'] = seq
     df_time['milliseconds'] = time_milli
 
-    filecsv=open(output_path+"timings.csv", "w")
+    filecsv=open(output_path+"timings_"+model+".csv", "w")
     
     timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
     
@@ -122,6 +122,7 @@ if __name__ == '__main__':
     workspace=options.output_path
     pathlib.Path(workspace).mkdir(parents=True, exist_ok=True) 
     pathlib.Path(workspace+"/disorder").mkdir(parents=True, exist_ok=True) 
+    pathlib.Path(workspace+"/disorder/"+options.model).mkdir(parents=True, exist_ok=True) 
     workspace=parent_path+"/models"
     pathlib.Path(workspace).mkdir(parents=True, exist_ok=True)
 

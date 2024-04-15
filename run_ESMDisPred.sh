@@ -3,7 +3,37 @@
 
 # model="ESMDispred"
 # model="ESM2Dispred"
-model="ESM2PDBDispred"
+# model="ESM2PDBDispred"
+
+
+PS3='Please enter your choice: '
+options=("ESMDispred" "ESM2Dispred" "ESM2PDBDispred" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "ESMDispred")
+            echo "Running with ESM1 features"
+            esmpOption="ESMDispred"
+            break
+            ;;
+        "ESM2Dispred")
+            echo "Running with ESM1 and ESM2 features"
+            esmpOption="ESM2Dispred"
+            break
+            ;;      
+        "ESM2PDBDispred")
+            echo "Running with ESM1, ESM2 features and PDB related features"
+            esmpOption="ESM2PDBDispred"
+            break
+            ;;    
+        "Quit")
+            exit 0
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+
+model=$esmpOption
 
 # read n
 # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
@@ -27,18 +57,17 @@ chmod -R 777 $fetures_dir
 # # Run ESMDisPred
 cd script
 # Save Memory Usages
-$localpythonPath  systemResource.py --pid $$ &
+$localpythonPath  systemResource.py --pid $$ --model $model &
 # # Run Dispredict3.0
 ./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
 # # Run ESM2
 
-tempmodel=$model
 if [ "$model" == "ESM2Dispred" ]  || [ "$model" == "ESM2PDBDispred" ] 
 then
     $localpythonPath run_ESM2.py --fasta_filepath $input_fasta --output_path ../$fetures_dir/ESM2/
 fi
 # # Run Predictions
 
-$localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $tempmodel
+$localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
 
 

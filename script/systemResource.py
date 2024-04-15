@@ -20,9 +20,11 @@ if __name__ == '__main__':
     # print("System Resource Monitoring")
     parser = OptionParser()
     parser.add_option("-f", "--pid", dest="pid", help="pid", default=1)
-  
-    (options, args) = parser.parse_args()
+    parser.add_option("-t", "--model", dest="model", help="Selected model ", default="")
 
+    
+    (options, args) = parser.parse_args()
+    model=options.model
     # print("PID",options.pid)
     pid=int(options.pid)
     # pid=280921
@@ -38,21 +40,22 @@ if __name__ == '__main__':
         df.loc[len(df)] = [round(total_memory_usage/1024**3,2),round(psutil.virtual_memory().available/1024**3,2),round(psutil.virtual_memory().used/1024**3,2),round(total_memory_usage / psutil.virtual_memory().total * 100,2)]
         time.sleep(1)
 
-    df.to_csv("../outputs/MemoryUsage.csv",index=False)
+    df.to_csv("../outputs/MemoryUsage"+model+".csv",index=False)
 
     # find the max memory usage
+    file2=open("../outputs/MemoryUsage_"+model+".txt", "w")
     max_memory_usage = df["MemoryUsageGB"].max()
-    print("Max Memory Usage:",max_memory_usage)
+    print("Max Memory Usage:",max_memory_usage,file=file2)
     #find max TotalMemoryAvailable
     max_TotalMemoryAvailable = df["TotalMemoryAvailable"].max()
-    print("Max TotalMemoryAvailable:",max_TotalMemoryAvailable)
+    print("Max TotalMemoryAvailable:",max_TotalMemoryAvailable,file=file2)
     # find min TotalMemoryAvailable
     min_TotalMemoryAvailable = df["TotalMemoryAvailable"].min()
-    print("Min TotalMemoryAvailable:",min_TotalMemoryAvailable)
+    print("Min TotalMemoryAvailable:",min_TotalMemoryAvailable,file=file2)
     #find max TotalMemoryUsed
     max_TotalMemoryUsed = df["TotalMemoryUsed"].max()
-    print("Max TotalMemoryUsed:",max_TotalMemoryUsed)
+    print("Max TotalMemoryUsed:",max_TotalMemoryUsed,file=file2)
     #find max MemoryUsagePercentage
     max_MemoryUsagePercentage = df["MemoryUsagePercentage"].max()
-    print("Max MemoryUsagePercentage:",max_MemoryUsagePercentage)
+    print("Max MemoryUsagePercentage:",max_MemoryUsagePercentage,file=file2)
     
