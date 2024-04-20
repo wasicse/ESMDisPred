@@ -21,6 +21,8 @@ else
 	$SHELL
 fi
 
+source ~/.bashrc
+
 # check if local dependencies for ESMDispred already exist
 if [ ! -d ".venv" ]; then
     echo "Installing ESMDispred dependencies"

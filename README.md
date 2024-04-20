@@ -46,6 +46,9 @@ run_ESMDisPred.sh
 #### Build Docker image 
 
 ```
+docker build -t wasicse/esmdispred .
+docker build -t wasicse/esmdispred - < Dockerfile
+
 docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#master    
 ```
  #### (Alternatively) Pull image from Docker registry.
@@ -58,38 +61,22 @@ docker pull wasicse/esmdispred:latest
 - Create the ESMDisPred container and mount the current (ESMDisPred) directory (downlaoded from GitHub) into the docker container.
 
 ```
-docker run -ti --name ESMDisPred  wasicse/ESMDisPred:latest
-```
-
-- Then, run following python commands inside the docker container to have the disordered prediction.
-
-```
-export PATH="/opt/poetry/bin:${PATH}"
-source /opt/ESMDisPred/.venv/bin/activate
-python /opt/ESMDisPred/script/ESMDisPred.py -f "/opt/ESMDisPred/example/sample.fasta" -o "/opt/ESMDisPred/output/"
+input_fasta="$(pwd)/example/sample.fasta"
+output_dir_path="outputs"
+./run_ESMDisPred_Docker.sh $input_fasta $output_dir_path
 ```
 
 - Check **output** folder for results. The output should be available only inside the docker container. 
 
-- You can also copy the output to the host computer using the following command:
 
-```
-docker cp ESMDisPred:/opt/ESMDisPred/output/ .
-```
 ## Run with Singularity 
 
 - You can also run using Singularity using the following command.
 
 ```
-singularity pull dispredict3.sif docker://wasicse/ESMDisPred
-singularity run --writable-tmpfs dispredict3.sif
-```
-- Then, run following python commands inside the Singularity container to have the disordered prediction.
-
-```
-export PATH="/opt/poetry/bin:${PATH}"
-source /opt/ESMDisPred/.venv/bin/activate
-python /opt/ESMDisPred/script/ESMDisPred.py -f "/opt/ESMDisPred/example/sample.fasta" -o "/opt/ESMDisPred/output/"
+input_fasta="$(pwd)/example/sample.fasta"
+output_dir_path="outputs"
+./run_ESMDisPred_singularity.sh $input_fasta $output_dir_path
 ```
 
 - The **output** folder should contain the results. The output directory contains the disorder probabilities with labels for each residue in **sample_disPred.txt** file. The fully disorder prediction for each protein sequence is stored in **sample_fullydisPred.txt** file.
