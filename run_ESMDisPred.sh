@@ -52,7 +52,7 @@ output_dir_path="outputs/"
 mkdir -p $fetures_dir
 mkdir -p $output_dir_path
 mkdir -p $fetures_dir/Dispredict3.0 
-mkdir -p $fetures_dir/ESM2
+
 chmod -R 777 $fetures_dir
 
 # # Run ESMDisPred
@@ -67,12 +67,13 @@ cd script
 # ./run_Dispredict3_Docker.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
 
 # Run ESM2
-# if [ "$model" == "ESM2Dispred" ]  || [ "$model" == "ESM2PDBDispred" ] 
-# then
-#     $localpythonPath run_ESM2.py --fasta_filepath $input_fasta --output_path ../$fetures_dir/ESM2/
-# fi
-# # # Run Predictions
+if [ "$model" == "ESM2Dispred" ]  || [ "$model" == "ESM2PDBDispred" ] 
+then
+    mkdir -p $fetures_dir/ESM2
+    $localpythonPath run_ESM2.py --fasta_filepath $input_fasta --output_path ../$fetures_dir/ESM2/
+fi
+# Run Predictions
 
-# $localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
+$localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
 
 
