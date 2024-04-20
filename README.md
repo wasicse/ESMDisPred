@@ -46,7 +46,7 @@ run_ESMDisPred.sh
 #### Build Docker image 
 
 ```
-docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#main    
+docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#master    
 ```
  #### (Alternatively) Pull image from Docker registry.
 

@@ -6,7 +6,7 @@ apt-get install -y --no-install-recommends make build-essential libssl-dev  wget
 
 WORKDIR "/opt"
 
-git clone https://github.com/wasicse/ESMDisPred.git
+RUN git clone https://github.com/wasicse/ESMDisPred.git
 
 WORKDIR "/opt/Dispredict3.0"
 
