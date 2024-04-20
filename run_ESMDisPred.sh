@@ -60,18 +60,11 @@ cd script
 # Save Memory Usages
 # $localpythonPath  systemResource.py --pid $$ --model $model &
 
+# Run local Dispredict3.0 
+./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 
+
 # Run Dispredict3.0 Docker Container
-# ./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
-
-# # Run local Dispredict3.0 
-cd ../tools/Dispredict3.0/script
-cp tcsh /tmp/
-source ../.venv/bin/activate
-../.venv/bin/python Dispredict3.0.py -f "../example/sample.fasta" -o "../output/"
-rm -rf ../tools/fldpnn/pyflDPnn_tmp*/
-rm -rf ../tools/fldpnn/output/*
-cd -
-
+# ./run_Dispredict3_Docker.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
 
 # Run ESM2
 # if [ "$model" == "ESM2Dispred" ]  || [ "$model" == "ESM2PDBDispred" ] 
