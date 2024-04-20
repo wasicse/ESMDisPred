@@ -135,14 +135,10 @@ export PATH="/opt/poetry/bin:${PATH}"
 source /opt/Dispredict3.0/.venv/bin/activate
 python /opt/Dispredict3.0/script/Dispredict3.0.py -f "/opt/Dispredict3.0/example/sample.fasta" -o "/opt/Dispredict3.0/output/"
 ```
-
 - Check **output** folder for results. The output should be available only inside the docker container. 
 
 - You can also copy the output to the host computer using the following command:
 
-```
-docker cp dispredict3.0:/opt/Dispredict3.0/output/ .
-```
 ## Run with Singularity 
 
 - You can also run using Singularity using the following command.

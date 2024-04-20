@@ -16,9 +16,9 @@ MemoryUsageESM2Dispred.csv
 MemoryUsageESM2PDBDispred.csv
 
 !/.dockerignore
-*.pkl
+tools/Dispredict3.0/models
 swissprot.psq
 swissprot.phr
 poetry.lock
-ParallelDispredict3.0/temp
-ParallelDispredict3.0/outputs
+tools/Dispredict3.0/ParallelDispredict3.0/temp
+tools/Dispredict3.0/ParallelDispredict3.0/outputs
