@@ -77,3 +77,5 @@ fi
 $localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
 
 
+chmod -R 777 $fetures_dir
+chmod -R 777 $output_dir_path

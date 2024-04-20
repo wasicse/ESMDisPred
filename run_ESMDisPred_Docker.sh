@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# docker build -t wasicse/esmdispred - < Dockerfile
+docker build -t wasicse/esmdispred - < Dockerfile
 
 # Input arguments
 # input_fasta=$1
@@ -25,36 +25,7 @@ docker run -it \
 	-v $(pwd)/features:/home/vscode/ESMDisPred/features:rw \
 	--entrypoint /bin/bash \
 	wasicse/esmdispred:latest \
-	-c git fetch --all ; git reset --hard origin/master
-	# \
-	# -c git pull ; /home/vscode/ESMDisPred/run_ESMDisPred.sh
+	-c /home/vscode/ESMDisPred/run_ESMDisPred.sh
 
 
 
-# docker run -ti --rm \
-# 	-v $input_fasta:/opt/ESMDisPred/example/sample.fasta \
-# 	-v $(pwd)/$output_dir:/opt/ESMDisPred/hostoutput:rw \
-# 	--entrypoint /bin/bash \
-# 	wasicse/esmdispred:latest  \
-# 	-c /opt/ESMDisPred/run_ESMDisPred.sh
-
-
-# mkdir -p $output_dir/.cache
-# mkdir -p $output_dir/.cache/hub
-# mkdir -p $output_dir/.cache/checkpoints
-# chmod -R 777 $output_dir
-# docker run --user $(id -u) -ti --rm \
-# 	-v $input_fasta:/opt/ESMDisPred/example/sample.fasta \
-# 	-v $(pwd)/$output_dir/.cache:/opt/ESMDisPred/.cache:rw \
-# 	-v $(pwd)/$output_dir/.cache/hub:/opt/ESMDisPred/.cache/hub:rw \
-# 	-e TORCH_HOME='/opt/ESMDisPred/.cache' \
-# 	-e MPLCONFIGDIR='/opt/ESMDisPred/.cache' \
-# 	--entrypoint /bin/bash \
-# 	wasicse/esmdispred:latest  
-	
-	
-	# \
-	# -c /opt/ESMDisPred//run_ESMDisPred.sh
-
-
-		# -v $(pwd)/$output_dir:/opt/ESMDisPred/$output_dir:rw \
