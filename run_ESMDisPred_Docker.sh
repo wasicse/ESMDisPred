@@ -24,10 +24,10 @@ docker run -it \
 	-v $(pwd)/$output_dir:/home/vscode/ESMDisPred/outputs:rw \
 	-v $(pwd)/features:/home/vscode/ESMDisPred/features:rw \
 	--entrypoint /bin/bash \
-	wasicse/esmdispred:latest  
-	
+	wasicse/esmdispred:latest \
+	-c git fetch --all ; git reset --hard origin/master
 	# \
-	# -c /home/vscode/ESMDisPred/run_ESMDisPred.sh
+	# -c git pull ; /home/vscode/ESMDisPred/run_ESMDisPred.sh
 
 
 
