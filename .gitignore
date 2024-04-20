@@ -14,3 +14,11 @@ MemoryUsage_ESM2PDBDispred.txt
 MemoryUsageESMDispred.csv
 MemoryUsageESM2Dispred.csv
 MemoryUsageESM2PDBDispred.csv
+
+!/.dockerignore
+*.pkl
+swissprot.psq
+swissprot.phr
+poetry.lock
+ParallelDispredict3.0/temp
+ParallelDispredict3.0/outputs

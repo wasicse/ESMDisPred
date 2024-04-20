@@ -1,4 +1,6 @@
 #! /bin/bash
+# Run the script 
+source ~/.bashrc
 
 echo "Installing Dependencies"
 pythonversion="miniconda3-4.7.12"
@@ -20,13 +22,16 @@ else
 fi
 
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+echo "Installing python version: $pythonversion"
 pyenv install $pythonversion
 pyenv local $pythonversion
 
 # Create local poetry environment
+echo "Creating local environment"
 rm -rf .venv
 rm -rf poetry.lock
 python3 -m venv .venv
+echo "Installing pip and setuptools"
 ./.venv/bin/pip install -U pip setuptools
 ./.venv/bin/pip install poetry==$poetryversion
 POETRY_VIRTUALENVS_IN_PROJECT="true"
@@ -36,4 +41,5 @@ POETRY_VIRTUALENVS_IN_PROJECT="true"
 
 #Test Installation.venv/bin/poetry run which python
 ./.venv/bin/poetry run python --version
+echo "Installing dependencies in poetry"
 ./.venv/bin/poetry install --no-root

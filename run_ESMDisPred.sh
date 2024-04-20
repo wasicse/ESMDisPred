@@ -1,4 +1,5 @@
 #! /bin/bash
+
 #Model Selection
 
 # model="ESMDispred"
@@ -58,16 +59,27 @@ chmod -R 777 $fetures_dir
 cd script
 # Save Memory Usages
 # $localpythonPath  systemResource.py --pid $$ --model $model &
-# # Run Dispredict3.0
-./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
-# # Run ESM2
 
-if [ "$model" == "ESM2Dispred" ]  || [ "$model" == "ESM2PDBDispred" ] 
-then
-    $localpythonPath run_ESM2.py --fasta_filepath $input_fasta --output_path ../$fetures_dir/ESM2/
-fi
-# # Run Predictions
+# Run Dispredict3.0 Docker Container
+# ./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
 
-$localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
+# # Run local Dispredict3.0 
+cd ../tools/Dispredict3.0/script
+cp tcsh /tmp/
+source ../.venv/bin/activate
+../.venv/bin/python Dispredict3.0.py -f "../example/sample.fasta" -o "../output/"
+rm -rf ../tools/fldpnn/pyflDPnn_tmp*/
+rm -rf ../tools/fldpnn/output/*
+cd -
+
+
+# Run ESM2
+# if [ "$model" == "ESM2Dispred" ]  || [ "$model" == "ESM2PDBDispred" ] 
+# then
+#     $localpythonPath run_ESM2.py --fasta_filepath $input_fasta --output_path ../$fetures_dir/ESM2/
+# fi
+# # # Run Predictions
+
+# $localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
 
 

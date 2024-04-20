@@ -17,6 +17,7 @@ lightgbm = "^3.3.2"
 biopython = "^1.79"
 gdown = "^4.4.0"
 ipykernel = "^6.10.0"
+torch = "1.13.1"
 
 [tool.poetry.dev-dependencies]
 
