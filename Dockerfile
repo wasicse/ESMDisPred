@@ -27,7 +27,7 @@ USER $USERNAME
 # add user to sudo group
 RUN sudo usermod -aG sudo $USERNAME
 
-# ------------------- install OpenFold and ESM2 -------------------
+# ------------------- install ESMDisPred -------------------
 ENV PATH="/home/vscode/.local/bin:${PATH}"
 WORKDIR /home/vscode
 
@@ -38,7 +38,7 @@ WORKDIR /home/vscode/.cache/torch/hub/checkpoints
 RUN sudo chmod -R 777 /home/vscode/.cache/torch/hub/checkpoints
 
 WORKDIR /home/vscode
-
+RUN echo "Downloading ESMDisPred"
 RUN git clone https://github.com/wasicse/ESMDisPred.git
 
 RUN chmod -R 777 /home/vscode/ESMDisPred
