@@ -41,20 +41,14 @@ WORKDIR /home/vscode
 
 RUN git clone https://github.com/wasicse/ESMDisPred.git
 
-# echo list of directories
-RUN  echo .* *
-
 RUN chmod -R 777 /home/vscode/ESMDisPred
 WORKDIR "/home/vscode/ESMDisPred"
 
-
-# RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="/home/vscode/.pyenv" 
 ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
 RUN echo 'export PYENV_ROOT=/home/vscode/.pyenv' >> ~/.bashrc
 RUN echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
 RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-
 
 # install and set up pyenv
 RUN bash -c 'set -eo pipefail; curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash'
@@ -66,11 +60,10 @@ RUN pyenv install ${PYTHON_VERSION} && \
 ENV PYTHON_VERSION=miniconda3-4.7.12
 RUN pyenv install ${PYTHON_VERSION} 
 
-
 RUN ./install_dependencies.sh
 
-RUN echo "updated git"
-RUN git reset --hard HEAD
-RUN git pull
+# RUN echo "updated git"
+# RUN git reset --hard HEAD
+# RUN git pull
 
 ENTRYPOINT ["/bin/bash"]
