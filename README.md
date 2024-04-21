@@ -74,9 +74,8 @@ output_dir_path="outputs"
 - You can also run using Singularity using the following command.
 
 ```
-input_fasta="$(pwd)/example/sample.fasta"
-output_dir_path="outputs"
-./run_ESMDisPred_singularity.sh $input_fasta $output_dir_path
+singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
+singularity run --writable-tmpfs esmdispred.sif
 ```
 
 - The **output** folder should contain the results. The output directory contains the disorder probabilities with labels for each residue in **sample_disPred.txt** file. The fully disorder prediction for each protein sequence is stored in **sample_fullydisPred.txt** file.
