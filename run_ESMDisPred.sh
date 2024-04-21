@@ -80,5 +80,5 @@ cd -
 # Current Directory 
 echo "Current Directory: $(pwd)"
 
-chmod -R 777 features
-chmod -R 777 outputs
+chmod -R 777 features/*
+chmod -R 777 outputs/*
