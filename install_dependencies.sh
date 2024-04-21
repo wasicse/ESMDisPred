@@ -56,7 +56,7 @@ else
 	echo "ESMDispred dependencies already installed"
 fi
 
-f [ "$singularity" != "1" ]
+if [ "$singularity" != "1" ]
 then
     # check if local dependencies for Dispredict3.0 already exist
     if [ ! -d "./tools/Dispredict3.0/.venv" ] ; then

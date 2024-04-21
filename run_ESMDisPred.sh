@@ -6,6 +6,7 @@
 # model="ESM2DisPred"
 # model="ESM2PDBDisPred"
 
+
 dryRun=$1
 
 # check if dryRun is set to 1 for docker image build

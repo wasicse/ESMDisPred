@@ -37,7 +37,7 @@ The dataset can be found in the dataset directory.
 
 ### Run ESMDisPred in local OS
 
-- Execute the following command to run ESMDisPred from the script directory.
+- Execute the following command to run ESMDisPred from the script directory. The script takes the input from /home/mkabir3/example/sample.fasta file and produce outputs to the outputs directory.
 
 ```
 ./run_ESMDisPred.sh
