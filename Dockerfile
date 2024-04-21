@@ -62,6 +62,7 @@ RUN pyenv install ${PYTHON_VERSION}
 
 RUN ./install_dependencies.sh
 
+RUN ./run_ESMDisPred.sh 1
 # RUN echo "updated git"
 # RUN git reset --hard HEAD
 # RUN git pull

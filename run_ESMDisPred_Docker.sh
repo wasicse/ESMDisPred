@@ -20,7 +20,7 @@ docker run  -it \
 	-v $(pwd)/features:/home/vscode/ESMDisPred/features:rw \
 	--entrypoint /bin/bash \
 	wasicse/esmdispred:latest \
-	-c /home/vscode/ESMDisPred/run_ESMDisPred.sh
+	-c /home/vscode/ESMDisPred/run_ESMDisPred.sh ; /bin/bash
 
 
 

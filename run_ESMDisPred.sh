@@ -6,11 +6,19 @@
 # model="ESM2DisPred"
 # model="ESM2PDBDisPred"
 
+dryRun=$1
 
-PS3='Please enter your choice: '
-options=("ESMDisPred" "ESM2DisPred" "ESM2PDBDisPred" "Quit")
-select opt in "${options[@]}"
-do
+# check if dryRun is set to 1 for docker image build
+if [ "$dryRun" == "1" ]
+then
+    echo "Dry Run for Building Docker Image"
+    model="ESM2PDBDisPred"
+else
+    echo "Running ESMDisPred"
+    PS3='Please enter your choice: '
+    options=("ESMDisPred" "ESM2DisPred" "ESM2PDBDisPred" "Quit")
+    select opt in "${options[@]}"
+    do
     case $opt in
         "ESMDisPred")
             echo "Running with DisPredict3.0 and ESM1 features"
@@ -32,9 +40,14 @@ do
             ;;
         *) echo "invalid option $REPLY";;
     esac
-done
+    done
 
-model=$esmpOption
+    model=$esmpOption
+fi
+
+
+
+
 
 # read n
 # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
