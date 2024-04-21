@@ -36,11 +36,8 @@ echo 'export PATH=/opt/pyenv/versions/miniconda3-3.9-4.10.3/bin/:$PATH' >> $SING
 export PATH=/opt/pyenv/versions/miniconda3-3.9-4.10.3/bin/:$PATH
 
 
-
-
 cd  "/ESMDisPred"
 ./install_dependencies.sh 1
-
 
 PYTHON_VERSION=miniconda3-4.7.12
 pyenv install ${PYTHON_VERSION} 
