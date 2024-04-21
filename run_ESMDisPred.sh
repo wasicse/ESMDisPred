@@ -102,3 +102,10 @@ then
 
     chmod -R 777 outputs/*
 fi
+if [ "$dryRun" == "1" ]
+then
+    echo "Dry Run. Removing features and outputs directories"
+    rm -rf features
+    rm -rf outputs
+
+fi
