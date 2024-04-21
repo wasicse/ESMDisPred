@@ -26,7 +26,7 @@ RUN chmod -R 777 /opt/ESMDisPred
 WORKDIR "/opt/ESMDisPred"
 
 RUN ./install_dependencies.sh
-
+RUN echo "ESMDisPred Dry Run"
 RUN ./run_ESMDisPred.sh 1
 
 ENTRYPOINT [ "/bin/bash" ]

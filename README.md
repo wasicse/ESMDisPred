@@ -10,7 +10,7 @@ The repository includes three distinct models, differentiated by the features th
  
 These instructions will help to install and start the ESMDisPred on the local machine for disordered region prediction.
 
-ESMDisPred has been tested on Ubuntu 20.04. It can be executed on a local Linux machine or within Docker and Singularity containers.
+ESMDisPred has been tested on Ubuntu 20.04. You need to have Pyenv installed on your local machine. ESMDisPred can be executed on a local Linux machine or within Docker and Singularity containers.
 
 ### Download the code
 

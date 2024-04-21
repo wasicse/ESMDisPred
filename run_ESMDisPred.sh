@@ -91,7 +91,14 @@ $localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path 
 
 cd -
 # Current Directory 
-echo "Current Directory: $(pwd)"
+# echo "Current Directory: $(pwd)"
+# check if directory is owned by the user
+if [ "$(stat -c "%U" "features/Dispredict3.0")" == "$USER" ]
+then
+    chmod -R 777 features/*
+fi
+if [ "$(stat -c "%U" "outputs/disorder")" == "$USER" ]
+then
 
-chmod -R 777 features/*
-chmod -R 777 outputs/*
+    chmod -R 777 outputs/*
+fi

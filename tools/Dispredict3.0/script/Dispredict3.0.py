@@ -16,7 +16,7 @@ from pathlib import Path
 import time
 import datetime
 import csv
-
+import pandas as pd
 warnings.filterwarnings("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  
 
@@ -248,10 +248,13 @@ def dispredict(fasta_filepath,output_path):
             seq.append(pid)
             time_milli.append(int((time.time() - start_time)*1000))
             
+        model="Dispredict3.0"
         df_time['sequence'] = seq
         df_time['milliseconds'] = time_milli
 
-        filecsv=open(output_path+"timings_"+model+".csv", "w")
+        # print current directory
+        print(os.getcwd())
+        filecsv=open("../../../outputs/timings_"+model+".csv", "w")
         
         timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
         

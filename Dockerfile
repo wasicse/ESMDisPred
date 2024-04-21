@@ -61,7 +61,7 @@ ENV PYTHON_VERSION=miniconda3-4.7.12
 RUN pyenv install ${PYTHON_VERSION} 
 
 RUN ./install_dependencies.sh
-
+RUN echo "ESMDisPred Dry Run"
 RUN ./run_ESMDisPred.sh 1
 # RUN echo "updated git"
 # RUN git reset --hard HEAD
