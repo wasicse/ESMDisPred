@@ -76,6 +76,8 @@ output_dir_path="outputs"
 ```
 singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
 singularity run --writable-tmpfs esmdispred.sif
+
+singularity shell -f --writable esmdispred.sif
 ```
 
 - The **output** folder should contain the results. The output directory contains the disorder probabilities with labels for each residue in **sample_disPred.txt** file. The fully disorder prediction for each protein sequence is stored in **sample_fullydisPred.txt** file.

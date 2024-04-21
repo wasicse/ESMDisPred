@@ -18,9 +18,6 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # Install 
 RUN apt-get update && apt-get install -y --no-install-recommends make build-essential libssl-dev  wget curl llvm libidn11 openjdk-11-jre git nano tcsh sudo  && apt-get clean
 
-
-
-
 # ********************************************************
 # * Anything else you want to do like clean up goes here *
 # ********************************************************
@@ -30,17 +27,9 @@ USER $USERNAME
 # add user to sudo group
 RUN sudo usermod -aG sudo $USERNAME
 
-
-
 # ------------------- install OpenFold and ESM2 -------------------
 ENV PATH="/home/vscode/.local/bin:${PATH}"
 WORKDIR /home/vscode
-
-
-
-
-
-
 
 # use gdown to download above files from google drive
 RUN mkdir -p /home/vscode/.cache/torch/hub/checkpoints
@@ -80,7 +69,7 @@ RUN pyenv install ${PYTHON_VERSION}
 
 RUN ./install_dependencies.sh
 
-RUN echo "updated git repository"
+RUN echo "updated git"
 RUN git reset --hard HEAD
 RUN git pull
 

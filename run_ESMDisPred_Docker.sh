@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# docker build -t wasicse/esmdispred2 - < Dockerfile
+docker build -t wasicse/esmdispred2 - < Dockerfile
 
 # Input arguments
 # input_fasta=$1
