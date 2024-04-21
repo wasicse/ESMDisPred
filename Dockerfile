@@ -80,7 +80,7 @@ RUN pyenv install ${PYTHON_VERSION}
 
 RUN ./install_dependencies.sh
 
-RUN echo "updated git repo"
+RUN echo "updated git"
 RUN git reset --hard HEAD
 RUN git pull
 

@@ -19,13 +19,15 @@ mkdir -p features
 chmod -R 777 features
 # --rm 
 echo $(pwd)/$output_dir
-docker run -it \
+
+docker run  -it \
 	-v $input_fasta:/home/vscode/ESMDisPred/example/sample.fasta \
 	-v $(pwd)/$output_dir:/home/vscode/ESMDisPred/outputs:rw \
 	-v $(pwd)/features:/home/vscode/ESMDisPred/features:rw \
 	--entrypoint /bin/bash \
 	wasicse/esmdispred:latest \
 	-c /home/vscode/ESMDisPred/run_ESMDisPred.sh
+
 
 
 
