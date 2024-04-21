@@ -1,16 +1,11 @@
 #! /bin/bash
 
-docker build -t wasicse/esmdispred2 - < Dockerfile
-
 # Input arguments
-# input_fasta=$1
-# output_dir=$2
+input_fasta=$1
+output_dir=$2
 
-
-input_fasta="$(pwd)/example/sample.fasta"
-output_dir="outputs"
-
-
+# input_fasta="$(pwd)/example/sample.fasta"
+# output_dir="outputs"
 echo "Input fasta file: $input_fasta"
 echo "Output directory: $output_dir"
 mkdir -p $output_dir
@@ -18,7 +13,6 @@ chmod  777 $output_dir
 mkdir -p features
 chmod  777 features
 # --rm 
-
 
 docker run  -it \
 	-v $input_fasta:/home/vscode/ESMDisPred/example/sample.fasta \

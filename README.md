@@ -1,18 +1,17 @@
 # ESMDisPred
 ESMDisPred: Enhanced Prediction of Disordered Regions Utilizing Representations from a Large Protein Language Model.
 
+The repository includes three distinct models, differentiated by the features they employ for prediction:
+* 'ESMDisPred' utilizes features from DisPredict3.0 and ESM1.
+* 'ESM2DisPred' incorporates features from DisPredict3.0, ESM1, and ESM2.
+* 'ESM2PDBDisPred' employs features from DisPredict3.0, ESM1, ESM2, along with structural-related features.
 
 # Getting Started
  
+These instructions will help to install and start the ESMDisPred on the local machine for disordered region prediction.
 
-These instructions will get you a copy of the project up and running on your local machine  for disorder prediction. 
+ESMDisPred has been tested on Ubuntu 20.04. It can be executed on a local Linux machine or within Docker and Singularity containers.
 
-We have tested ESMDisPred on Ubuntu 20.04. You would need to have Docker in your local or server machine.
-
- ## Dataset
-The dataset can be found in the dataset directory. 
-
-## Run with local OS
 ### Download the code
 
 - Retrieve the code
@@ -22,9 +21,15 @@ git clone https://github.com/wasicse/ESMDisPred.git
 
 ```
 
+## Dataset
+The dataset can be found in the dataset directory. 
+
+## Run with local OS
+
+
 #### Install Dependencies in local OS with SHELL script
 
-You can install all dependencies by running the following script:
+- Install all dependencies by running the following script:
 
 ```
 ./install_dependencies.sh
@@ -32,12 +37,11 @@ You can install all dependencies by running the following script:
 
 ### Run ESMDisPred in local OS
 
-Execute the following command to run ESMDisPred from the script directory.
+- Execute the following command to run ESMDisPred from the script directory.
 
 ```
-run_ESMDisPred.sh
+./run_ESMDisPred.sh
 ```
-- The **outputs** folder should contain the results. The output directory contains the disorder probabilities with labels for each residue in **PROTEINID.caid** file. The directory also have the "timings.csv" file and store execution time for each prediction.
 
 
 ## Run with Docker
@@ -46,10 +50,7 @@ run_ESMDisPred.sh
 #### Build Docker image 
 
 ```
-docker build -t wasicse/esmdispred .
-docker build -t wasicse/esmdispred - < Dockerfile
-
-docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#master    
+docker build -t wasicse/esmdispred2 https://github.com/wasicse/ESMDisPred.git#master    
 ```
  #### (Alternatively) Pull image from Docker registry.
 
@@ -58,16 +59,13 @@ docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#mas
 docker pull wasicse/esmdispred:latest
 ```
 #### Run ESMDisPred using Docker image
-- Create the ESMDisPred container and mount the current (ESMDisPred) directory (downlaoded from GitHub) into the docker container.
+- Create the ESMDisPred container. The script will mount input fasta, features nad outputs directorries form the current (ESMDisPred) directory (downlaoded from GitHub) into the docker container.
 
 ```
 input_fasta="$(pwd)/example/sample.fasta"
-output_dir_path="outputs"
-./run_ESMDisPred_Docker.sh $input_fasta $output_dir_path
+output_dir="outputs"
+./run_ESMDisPred_Docker.sh $input_fasta $output_dir
 ```
-
-- Check **output** folder for results. The output should be available only inside the docker container. 
-
 
 ## Run with Singularity 
 
@@ -76,11 +74,14 @@ output_dir_path="outputs"
 ```
 singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
 singularity run --writable-tmpfs esmdispred.sif
-
-singularity shell -f --writable esmdispred.sif
 ```
 
-- The **output** folder should contain the results. The output directory contains the disorder probabilities with labels for each residue in **sample_disPred.txt** file. The fully disorder prediction for each protein sequence is stored in **sample_fullydisPred.txt** file.
+## Output format
+
+- The **outputs** folder should contain the results for each of the trained model including Dispredict3.0. 
+
+- The output directory contains the disorder probabilities for each residue in **PROTEINID.caid** file. The directory also have the "timings.csv" file and store execution time for each prediction.
+
 
 ## Authors
 

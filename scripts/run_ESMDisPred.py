@@ -91,7 +91,7 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
     
     timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
     
-    print("# Running ESMDisPred, started "+timenow,file=filecsv)
+    print("# Running "+model+", started "+timenow,file=filecsv)
     
     for row in df_time.values:
             print(str(row[0])+","+str(row[1]),file=filecsv)

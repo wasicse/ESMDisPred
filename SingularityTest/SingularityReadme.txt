@@ -1,6 +1,6 @@
 docker build -t wasicse/singularity - < Dockerfile
 
-docker run --privileged -it wasicse/singularity
+docker run -it --privileged -v /etc/localtime:/etc/localtime  wasicse/singularity
 
 singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
 

@@ -13,6 +13,9 @@ from optparse import OptionParser
 import os
 import random
 from pathlib import Path
+import time
+import datetime
+import csv
 
 warnings.filterwarnings("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  
@@ -109,7 +112,11 @@ def dispredict(fasta_filepath,output_path):
         # print("Dispredict3.0 prediction started...")
         threshold=0.382
         # flagpid=0
+        df_time = pd.DataFrame(columns=['sequence', 'milliseconds'])
+        seq=[]
+        time_milli=[]  
         for record in SeqIO.parse(fasta_filepath, "fasta"):
+            start_time = time.time()
             print("Protein ID: ", record.id)
             # pid=record.id.split("|")[1].()
             pid=record.id.strip()
@@ -234,6 +241,27 @@ def dispredict(fasta_filepath,output_path):
             #     f.write((">"+pid+"\n").encode())
             #     fmt = '%1.3f', '%s'
             #     np.savetxt(f, np.array([fd_proba, fd_label ]).reshape(1,2), delimiter='\t',fmt=fmt) 
+
+
+            print("--- Total Time (ms) ---" , int((time.time() - start_time)*1000))
+            print("\n")
+            seq.append(pid)
+            time_milli.append(int((time.time() - start_time)*1000))
+            
+        df_time['sequence'] = seq
+        df_time['milliseconds'] = time_milli
+
+        filecsv=open(output_path+"timings_"+model+".csv", "w")
+        
+        timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
+        
+        print("# Running "+model+", started "+timenow,file=filecsv)
+        
+        for row in df_time.values:
+                print(str(row[0])+","+str(row[1]),file=filecsv)
+        filecsv.close()
+
+
 
 
         bashCommand="rm -rf "+parent_path+"tools/fldpnn/output/*"
