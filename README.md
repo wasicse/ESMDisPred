@@ -37,7 +37,7 @@ The dataset can be found in the dataset directory.
 
 ### Run ESMDisPred in local OS
 
-- Execute the following command to run ESMDisPred from the script directory. The script takes the input from /home/mkabir3/example/sample.fasta file and produce outputs to the outputs directory.
+- Execute the following command to run ESMDisPred from the script directory. The script takes the input from example/sample.fasta file and save disordered probabilities in outputs directory.
 
 ```
 ./run_ESMDisPred.sh
@@ -82,9 +82,9 @@ sudo singularity run --writable-tmpfs \
 	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw esmdispred.sif
 cd /opt/ESMDisPred  && ./run_ESMDisPred.sh
 ```
-#### Build Singularity image (Not recommended)
+#### Build Singularity image 
 ```
-udo singularity  build ESMDispS.sif ESMDispS.def
+sudo singularity  build ESMDispS.sif ESMDispS.def
 input_fasta="$(pwd)/example/sample.fasta"
 output_dir="outputs"
 sudo singularity run --writable-tmpfs \
