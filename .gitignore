@@ -26,3 +26,4 @@ largeModels
 tools/Dispredict3.0/tools/fldpnn/output
 tools/Dispredict3.0/tools/fldpnn/pyflDPnn_tmp_*
 tools/Dispredict3.0/tools/fldpnn/programs/NNpackage/tmp*
+.cache

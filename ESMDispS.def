@@ -18,7 +18,7 @@ apt-get update
 apt-get install -y --no-install-recommends make build-essential libssl-dev  wget curl llvm libidn11 openjdk-11-jre git nano tcsh  
 
 # ------------------- install ESM2Dispred -------------------
-cd /
+cd /opt
 echo "Downloading ESMDisPred"
 git clone https://github.com/wasicse/ESMDisPred.git
 
@@ -27,35 +27,14 @@ export PYENV_ROOT=/opt/pyenv
 export PATH="/opt/pyenv/bin:$PATH"
 curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 
-PYTHON_VERSION=miniconda3-3.9-4.10.3
-pyenv install ${PYTHON_VERSION} && \
-pyenv global ${PYTHON_VERSION}
-
-savedPath=$PATH
-#savedSing=$SINGULARITY_ENVIRONMENT
-echo 'export PATH=/opt/pyenv/versions/miniconda3-3.9-4.10.3/bin/:$PATH' >> $SINGULARITY_ENVIRONMENT
-export PATH=/opt/pyenv/versions/miniconda3-3.9-4.10.3/bin/:$PATH
-
-
-cd  "/ESMDisPred"
-./install_dependencies.sh 1
-cd -
-
 PYTHON_VERSION=miniconda3-4.7.12
 pyenv install ${PYTHON_VERSION} 
-PATH=$savedPath
-#SINGULARITY_ENVIRONMENT=$savedSing 
 echo 'export PATH=/opt/pyenv/versions/miniconda3-4.7.12/bin/:$PATH' >> $SINGULARITY_ENVIRONMENT
 export PATH=/opt/pyenv/versions/miniconda3-4.7.12/bin/:$PATH
-cd /ESMDisPred/tools/Dispredict3.0
-./install_dependencies_dispredict3.sh
-cd -
 
-echo "ESMDisPred Dry Run"
-cd /ESMDisPred
-./run_ESMDisPred.sh 1
-chmod -R 777 /ESMDisPred
+cd /opt/ESMDisPred
+./install_dependencies.sh
 
 %runscript
-cd /ESMDisPred
-./run_ESMDisPred.sh
+/bin/bash
+cd /opt/ESMDisPred

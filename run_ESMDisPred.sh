@@ -1,8 +1,11 @@
 #! /bin/bash
 
+# change torhc cache directory
+export TORCH_HOME=$(pwd)/.cache
+
 dryRun=$1
 
-echo "Download Large Models"
+echo "Downloading Large Models...."
 ./run_downloadLargeModels.sh
 
 # check if dryRun is set to 1 for docker image build
@@ -28,8 +31,10 @@ then
     # output_dir_path=$2/
 else
     echo "Running ESMDisPred"
+    echo $input_fasta
+    echo $output_dir
 
-    if [ -z "$input_fasta" ] || [ -z "$output_dir" ]
+    if [ -z "$1" ] || [ -z "$2" ]
     then
         echo "Please provide input fasta file and output directory"
         exit 1
