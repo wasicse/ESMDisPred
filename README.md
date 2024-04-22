@@ -104,7 +104,7 @@ Md Wasi Ul Kabir, Md Tamjidul Hoque. For any issue please contact: Md Tamjidul H
 
 ## References
 
-1. Md Wasi Ul Kabir, and Md Tamjidul Hoque. “ESMDisPred: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model.” Applied Mathematics and Computation, vol. 472, July 2024, p. 128630. ScienceDirect, https://doi.org/10.1016/j.amc.2024.128630.
+1. Md Wasi Ul Kabir, and Md Tamjidul Hoque. DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model.” Applied Mathematics and Computation, vol. 472, July 2024, p. 128630. ScienceDirect, https://doi.org/10.1016/j.amc.2024.128630.
 
 2. Hu, Gang, Akila Katuwawala, Kui Wang, Zhonghua Wu, Sina Ghadermarzi, Jianzhao Gao, and Lukasz Kurgan. “FlDPnn: Accurate Intrinsic Disorder Prediction with Putative Propensities of Disorder Functions.” Nature Communications 12, no. 1 (December 2021): 4438. https://doi.org/10.1038/s41467-021-24773-7.
 
