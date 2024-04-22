@@ -18,7 +18,6 @@ ESMDisPred has been tested on Ubuntu 20.04. You need to have Pyenv installed on 
 
 ```
 git clone https://github.com/wasicse/ESMDisPred.git
-
 ```
 
 ## Dataset
