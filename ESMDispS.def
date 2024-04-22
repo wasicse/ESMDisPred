@@ -32,25 +32,30 @@ pyenv install ${PYTHON_VERSION} && \
 pyenv global ${PYTHON_VERSION}
 
 savedPath=$PATH
+#savedSing=$SINGULARITY_ENVIRONMENT
 echo 'export PATH=/opt/pyenv/versions/miniconda3-3.9-4.10.3/bin/:$PATH' >> $SINGULARITY_ENVIRONMENT
 export PATH=/opt/pyenv/versions/miniconda3-3.9-4.10.3/bin/:$PATH
 
 
 cd  "/ESMDisPred"
 ./install_dependencies.sh 1
+cd -
 
 PYTHON_VERSION=miniconda3-4.7.12
 pyenv install ${PYTHON_VERSION} 
 PATH=$savedPath
+#SINGULARITY_ENVIRONMENT=$savedSing 
 echo 'export PATH=/opt/pyenv/versions/miniconda3-4.7.12/bin/:$PATH' >> $SINGULARITY_ENVIRONMENT
 export PATH=/opt/pyenv/versions/miniconda3-4.7.12/bin/:$PATH
-cd /tools/Dispredict3.0
+cd /ESMDisPred/tools/Dispredict3.0
 ./install_dependencies_dispredict3.sh
-
+cd -
 
 echo "ESMDisPred Dry Run"
+cd /ESMDisPred
 ./run_ESMDisPred.sh 1
+chmod -R 777 /ESMDisPred
 
 %runscript
-cd ESMDisPred
-run_ESMDisPred.sh
+cd /ESMDisPred
+./run_ESMDisPred.sh

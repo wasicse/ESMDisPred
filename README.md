@@ -69,13 +69,22 @@ output_dir="outputs"
 
 ## Run with Singularity 
 
+
+#### Build Singularity image from docker image
 - You can also run using Singularity using the following command.
 
 ```
-singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
+singularity pull esmdispred.sif docker://wasicse/esmdispredroot:latest
 singularity run --writable-tmpfs esmdispred.sif
+cd /opt/ESMDisPred  && ./run_ESMDisPred.sh
 ```
-
+#### Build Singularity image (Not recommended)
+```
+sudo singularity  build ESMDispS.sif ESMDispS.def
+singularity shell ESMDispS.sif
+cd /ESMDisPred
+cd /ESMDisPred.sh
+```
 ## Output format
 
 - The **outputs** folder should contain the results for each of the trained model including Dispredict3.0. 
