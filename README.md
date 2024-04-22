@@ -66,24 +66,25 @@ docker pull wasicse/esmdispred:latest
 
 ## Run with Singularity 
 
+#### Build Singularity image 
+```
+sudo singularity build ESMDispS.sif ESMDispS.def
+sudo singularity run --writable-tmpfs \
+	-B $(pwd)/example/sample.fasta:/opt/ESMDisPred/example/sample.fasta \
+	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
+	-B $(pwd)/outputs:/opt/ESMDisPred/outputs:rw ESMDispS.sif
+cd /opt/ESMDisPred  && ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
+```
+
 #### Build Singularity image from docker image
 - You can also run using Singularity using the following command.
 
 ```
 singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
 sudo singularity run --writable-tmpfs \
-	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
+	-B $(pwd)/example/sample.fasta:/opt/ESMDisPred/example/sample.fasta \
 	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
-	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw esmdispred.sif
-cd /opt/ESMDisPred  && ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
-```
-#### Build Singularity image 
-```
-sudo singularity  build ESMDispS.sif ESMDispS.def
-sudo singularity run --writable-tmpfs \
-	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
-	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
-	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw ESMDispS.sif
+	-B $(pwd)/outputs:/opt/ESMDisPred/outputs:rw esmdispred.sif
 cd /opt/ESMDisPred  && ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 ## Output format

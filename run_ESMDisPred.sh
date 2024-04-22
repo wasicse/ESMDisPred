@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# change torhc cache directory
+# change torch cache directory
 export TORCH_HOME=$(pwd)/.cache
 
 dryRun=$1
@@ -84,9 +84,6 @@ else
     # output_dir_path="outputs/"
     output_dir_path=$2/
 fi
-
-
-
 
 # Create output directories
 mkdir -p $fetures_dir
