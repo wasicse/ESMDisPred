@@ -31,6 +31,8 @@ sudo singularity run --writable-tmpfs \
 cd /opt/ESMDisPred  && ./run_ESMDisPred.sh
 
 
+git clone https://github.com/wasicse/ESMDisPred.git
+
 sudo singularity  build ESMDispS.sif ESMDispS.def
 input_fasta="$(pwd)/example/sample.fasta"
 output_dir="outputs"

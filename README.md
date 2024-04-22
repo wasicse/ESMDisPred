@@ -75,15 +75,21 @@ output_dir="outputs"
 
 ```
 singularity pull esmdispred.sif docker://wasicse/esmdispredroot:latest
-singularity run --writable-tmpfs esmdispred.sif
+input_fasta="$(pwd)/example/sample.fasta"
+output_dir="outputs"
+sudo singularity run --writable-tmpfs \
+	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
+	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw esmdispred.sif
 cd /opt/ESMDisPred  && ./run_ESMDisPred.sh
 ```
 #### Build Singularity image (Not recommended)
 ```
-sudo singularity  build ESMDispS.sif ESMDispS.def
-singularity shell ESMDispS.sif
-cd /ESMDisPred
-cd /ESMDisPred.sh
+udo singularity  build ESMDispS.sif ESMDispS.def
+input_fasta="$(pwd)/example/sample.fasta"
+output_dir="outputs"
+sudo singularity run --writable-tmpfs \
+	-B $input_fasta:/ESMDisPred/example/sample.fasta \
+	-B $(pwd)/$output_dir:/ESMDisPred/outputs:rw ESMDispS.sif
 ```
 ## Output format
 
