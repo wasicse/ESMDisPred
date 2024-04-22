@@ -43,7 +43,6 @@ The dataset can be found in the dataset directory.
 ./run_ESMDisPred.sh
 ```
 
-
 ## Run with Docker
 - To run the ESMDisPred tool with docker, you can either build the docker image using dockerfile or pull the docker image from the registry.
 
@@ -68,7 +67,6 @@ output_dir="outputs"
 ```
 
 ## Run with Singularity 
-
 
 #### Build Singularity image from docker image
 - You can also run using Singularity using the following command.
@@ -108,6 +106,6 @@ Md Wasi Ul Kabir, Md Tamjidul Hoque. For any issue please contact: Md Tamjidul H
 
 2. Hu, Gang, Akila Katuwawala, Kui Wang, Zhonghua Wu, Sina Ghadermarzi, Jianzhao Gao, and Lukasz Kurgan. “FlDPnn: Accurate Intrinsic Disorder Prediction with Putative Propensities of Disorder Functions.” Nature Communications 12, no. 1 (December 2021): 4438. https://doi.org/10.1038/s41467-021-24773-7.
 
+3. Rives, Alexander, et al. “Biological Structure and Function Emerge from Scaling Unsupervised Learning to 250 Million Protein Sequences.” Proceedings of the National Academy of Sciences, vol. 118, no. 15, Apr. 2021, p. e2016239118. DOI.org (Crossref), https://doi.org/10.1073/pnas.2016239118.
 
-
-
+4. Zeming Lin et al. ,Evolutionary-scale prediction of atomic-level protein structure with a language model.Science 379,1123-1130(2023).DOI:10.1126/science.ade2574
