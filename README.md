@@ -39,7 +39,7 @@ The dataset can be found in the dataset directory.
 - Execute the following command to run ESMDisPred from the script directory. The script takes the input from example/sample.fasta file and save disordered probabilities in outputs directory.
 
 ```
-./run_ESMDisPred.sh
+./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 
 ## Run with Docker
@@ -60,9 +60,7 @@ docker pull wasicse/esmdispred:latest
 - Create the ESMDisPred container. The script will mount input fasta, features nad outputs directorries form the current (ESMDisPred) directory (downlaoded from GitHub) into the docker container.
 
 ```
-input_fasta="$(pwd)/example/sample.fasta"
-output_dir="outputs"
-./run_ESMDisPred_Docker.sh $input_fasta $output_dir
+./run_ESMDisPred_Docker.sh $(pwd)/example/sample.fasta outputs
 ```
 
 ## Run with Singularity 
@@ -72,21 +70,18 @@ output_dir="outputs"
 
 ```
 singularity pull esmdispred.sif docker://wasicse/esmdispredroot:latest
-input_fasta="$(pwd)/example/sample.fasta"
-output_dir="outputs"
 sudo singularity run --writable-tmpfs \
 	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
 	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw esmdispred.sif
-cd /opt/ESMDisPred  && ./run_ESMDisPred.sh
+cd /opt/ESMDisPred  && ./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
 ```
 #### Build Singularity image 
 ```
 sudo singularity  build ESMDispS.sif ESMDispS.def
-input_fasta="$(pwd)/example/sample.fasta"
-output_dir="outputs"
 sudo singularity run --writable-tmpfs \
 	-B $input_fasta:/ESMDisPred/example/sample.fasta \
 	-B $(pwd)/$output_dir:/ESMDisPred/outputs:rw ESMDispS.sif
+./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
 ```
 ## Output format
 

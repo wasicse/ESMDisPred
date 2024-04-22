@@ -12,8 +12,29 @@ then
     model="ESM2PDBDisPred"
     rm -rf features
     rm -rf outputs
+
+        # read n
+    # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
+    n=1
+    # local python path
+    localpythonPath="../.venv/bin/python"
+    # input fasta file
+    input_fasta="$(pwd)/example/sample.fasta"
+    # input_fasta=$1
+    # output directory for features
+    fetures_dir="features"
+    # output directory for predictions
+    output_dir_path="outputs/"
+    # output_dir_path=$2/
 else
     echo "Running ESMDisPred"
+
+    if [ -z "$input_fasta" ] || [ -z "$output_dir" ]
+    then
+        echo "Please provide input fasta file and output directory"
+        exit 1
+    fi
+
     PS3='Please enter your choice: '
     options=("ESMDisPred" "ESM2DisPred" "ESM2PDBDisPred" "Quit")
     select opt in "${options[@]}"
@@ -42,19 +63,25 @@ else
     done
 
     model=$esmpOption
+
+
+    # read n
+    # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
+    n=1
+    # local python path
+    localpythonPath="../.venv/bin/python"
+    # input fasta file
+    # input_fasta="$(pwd)/example/sample.fasta"
+    input_fasta=$1
+    # output directory for features
+    fetures_dir="features"
+    # output directory for predictions
+    # output_dir_path="outputs/"
+    output_dir_path=$2/
 fi
 
-# read n
-# Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
-n=1
-# local python path
-localpythonPath="../.venv/bin/python"
-# input fasta file
-input_fasta="$(pwd)/example/sample.fasta"
-# output directory for features
-fetures_dir="features"
-# output directory for predictions
-output_dir_path="outputs/"
+
+
 
 # Create output directories
 mkdir -p $fetures_dir
