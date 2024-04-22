@@ -3,7 +3,8 @@
 source ~/.bashrc
 singularity=$1
 echo "Installing Dependencies"
-pythonversion="miniconda3-3.9-4.10.3"
+# pythonversion="miniconda3-3.9-4.10.3"
+pythonversion="miniconda3-4.7.12"
 poetryversion="1.1.13"
 echo "Check if python version is correct or not. Current python version is: $pythonversion"
 echo "Check if poetry version is correct or not. Current poetry version is: $poetryversion"
@@ -56,19 +57,4 @@ else
 	echo "ESMDispred dependencies already installed"
 fi
 
-if [ "$singularity" != "1" ]
-then
-    # check if local dependencies for Dispredict3.0 already exist
-    if [ ! -d "./tools/Dispredict3.0/.venv" ] ; then
-        echo "Installing Dispredict3.0 dependencies"
-        cd ./tools/Dispredict3.0
-        ./install_dependencies_dispredict3.sh
-        cd -
-
-    else 
-        echo "Dispredict3.0 dependencies already installed"
-    fi
-
-else 
-    echo "Singularity is set to 1. "
-fi
+ln -fs $(pwd)/.venv $(pwd)/tools/Dispredict3.0/.venv

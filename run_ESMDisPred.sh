@@ -8,6 +8,8 @@
 
 
 dryRun=$1
+echo "Download Large Models"
+./run_downloadLargeModels.sh
 
 # check if dryRun is set to 1 for docker image build
 if [ "$dryRun" == "1" ]

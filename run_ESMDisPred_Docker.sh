@@ -18,6 +18,7 @@ docker run  -it \
 	-v $input_fasta:/home/vscode/ESMDisPred/example/sample.fasta \
 	-v $(pwd)/$output_dir:/home/vscode/ESMDisPred/outputs:rw \
 	-v $(pwd)/features:/home/vscode/ESMDisPred/features:rw \
+	-v $(pwd)/largeModels:/home/vscode/ESMDisPred/largeModels:rw \
 	--entrypoint /bin/bash \
 	wasicse/esmdispred:latest \
 	-c /home/vscode/ESMDisPred/run_ESMDisPred.sh ; /bin/bash
