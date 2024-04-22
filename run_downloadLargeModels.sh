@@ -1,4 +1,4 @@
-
+#! /bin/bash
 
 # Download large models 
 mkdir -p largeModels

@@ -1,7 +1,6 @@
 #! /bin/bash
 # reset the terminal
 source ~/.bashrc
-singularity=$1
 echo "Installing Dependencies"
 # pythonversion="miniconda3-3.9-4.10.3"
 pythonversion="miniconda3-4.7.12"
@@ -23,13 +22,10 @@ else
 fi
 
 source ~/.bashrc
-
 # check if local dependencies for ESMDispred already exist
 if [ ! -d ".venv" ]; then
     echo "Installing ESMDispred dependencies"
     
-
-
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 echo "Installing python version: $pythonversion"
 pyenv install $pythonversion

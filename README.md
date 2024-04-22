@@ -48,7 +48,7 @@ The dataset can be found in the dataset directory.
 #### Build Docker image 
 
 ```
-docker build -t wasicse/esmdispred2 https://github.com/wasicse/ESMDisPred.git#master    
+docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#master    
 ```
  #### (Alternatively) Pull image from Docker registry.
 
@@ -75,7 +75,7 @@ sudo singularity run --writable-tmpfs \
 	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
 	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
 	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw esmdispred.sif
-cd /opt/ESMDisPred  && ./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
+cd /opt/ESMDisPred  && ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 #### Build Singularity image 
 ```
@@ -84,7 +84,7 @@ sudo singularity run --writable-tmpfs \
 	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
 	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
 	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw ESMDispS.sif
-cd /opt/ESMDisPred  && ./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
+cd /opt/ESMDisPred  && ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 ## Output format
 

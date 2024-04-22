@@ -19,11 +19,10 @@ mkdir -p $output_dir
 chmod  777 $output_dir
 mkdir -p features
 chmod  777 features
-# --rm 
 
 # ESMpath="/home/vscode/ESMDisPred"
 ESMpath="/opt/ESMDisPred"
-docker run  -it \
+docker run --rm  -it \
 	-v $input_fasta:$ESMpath/example/sample.fasta \
 	-v $(pwd)/$output_dir:$ESMpath/outputs:rw \
 	-v $(pwd)/features:$ESMpath/features:rw \
@@ -31,10 +30,8 @@ docker run  -it \
 	-v $(pwd)/run_ESMDisPred.sh:$ESMpath/run_ESMDisPred.sh \
 	-v $(pwd)/run_downloadLargeModels.sh:$ESMpath/run_downloadLargeModels.sh \
 	--entrypoint /bin/bash \
-	wasicse/esmdispred:latest 
-	
-	# \
-	# -c $ESMpath/run_ESMDisPred.sh ; /bin/bash
+	wasicse/esmdispred:latest 	
+
 
 
 
