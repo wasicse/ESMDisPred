@@ -61,7 +61,6 @@ docker pull wasicse/esmdispred:latest
 
 ```
 ./run_ESMDisPred_Docker.sh $(pwd)/example/sample.fasta outputs
-
 ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 
@@ -71,9 +70,10 @@ docker pull wasicse/esmdispred:latest
 - You can also run using Singularity using the following command.
 
 ```
-singularity pull esmdispred.sif docker://wasicse/esmdispredroot:latest
+singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
 sudo singularity run --writable-tmpfs \
 	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
+	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
 	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw esmdispred.sif
 cd /opt/ESMDisPred  && ./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
 ```
@@ -81,9 +81,10 @@ cd /opt/ESMDisPred  && ./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
 ```
 sudo singularity  build ESMDispS.sif ESMDispS.def
 sudo singularity run --writable-tmpfs \
-	-B $input_fasta:/ESMDisPred/example/sample.fasta \
-	-B $(pwd)/$output_dir:/ESMDisPred/outputs:rw ESMDispS.sif
-./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
+	-B $input_fasta:/opt/ESMDisPred/example/sample.fasta \
+	-B $(pwd)/largeModels:/opt/ESMDisPred/largeModels \
+	-B $(pwd)/$output_dir:/opt/ESMDisPred/outputs:rw ESMDispS.sif
+cd /opt/ESMDisPred  && ./run_ESMDisPred.sh	$(pwd)/example/sample.fasta outputs
 ```
 ## Output format
 

@@ -30,8 +30,6 @@ docker run  -it \
 	-v $(pwd)/largeModels:$ESMpath/largeModels:rw \
 	-v $(pwd)/run_ESMDisPred.sh:$ESMpath/run_ESMDisPred.sh \
 	-v $(pwd)/run_downloadLargeModels.sh:$ESMpath/run_downloadLargeModels.sh \
-	-e TORCH_HOME='$ESMpath/.cache' \
-	-e MPLCONFIGDIR='$ESMpath/.cache' \
 	--entrypoint /bin/bash \
 	wasicse/esmdispred:latest 
 	

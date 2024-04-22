@@ -11,8 +11,7 @@ wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/scaler.pkl
 wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/pca.pkl
 wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl
 wget -nvc https://dl.fbaipublicfiles.com/fair-esm/regression/esm1b_t33_650M_UR50S-contact-regression.pt
-
-
+wget -nvc https://dl.fbaipublicfiles.com/fair-esm/regression/esm2_t33_650M_UR50D-contact-regression.pt
 
 # Create symbolic links
 echo "Creating symbolic links"
@@ -29,5 +28,6 @@ mkdir -p ./.cache/hub/checkpoints
 ln -fs $(pwd)/largeModels/esm1b_t33_650M_UR50S.pt $(pwd)/.cache/hub/checkpoints/esm1b_t33_650M_UR50S.pt
 ln -fs $(pwd)/largeModels/esm2_t33_650M_UR50D.pt $(pwd)/.cache/hub/checkpoints/esm2_t33_650M_UR50D.pt
 ln -fs $(pwd)/largeModels/esm1b_t33_650M_UR50S-contact-regression.pt $(pwd)/.cache/hub/checkpoints/esm1b_t33_650M_UR50S-contact-regression.pt
+ln -fs $(pwd)/largeModels/esm2_t33_650M_UR50D-contact-regression.pt $(pwd)/.cache/hub/checkpoints/esm2_t33_650M_UR50D-contact-regression.pt
 
 
