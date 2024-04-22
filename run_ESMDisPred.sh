@@ -1,13 +1,7 @@
 #! /bin/bash
 
-#Model Selection
-
-# model="ESMDisPred"
-# model="ESM2DisPred"
-# model="ESM2PDBDisPred"
-
-
 dryRun=$1
+
 echo "Download Large Models"
 ./run_downloadLargeModels.sh
 
@@ -49,10 +43,6 @@ else
 
     model=$esmpOption
 fi
-
-
-
-
 
 # read n
 # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."

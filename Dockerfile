@@ -16,7 +16,7 @@ RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 # RUN pyenv install ${PYTHON_VERSION2} && \
 #       pyenv global ${PYTHON_VERSION2}
 
-RUN echo "Cloning ESMDisPred"      
+RUN echo "Cloning ESMDisPred from github..."      
 RUN git clone https://github.com/wasicse/ESMDisPred.git && \
 chmod -R 777 /opt/ESMDisPred
 WORKDIR "/opt/ESMDisPred"

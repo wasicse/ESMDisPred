@@ -15,6 +15,7 @@ wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl
 echo "Creating symbolic links"
 
 cd -
+mkdir -p tools/Dispredict3.0/models
 ln -fs $(pwd)/largeModels/pca.pkl $(pwd)/tools/Dispredict3.0/models/pca.pkl
 ln -fs $(pwd)/largeModels/scaler.pkl $(pwd)/tools/Dispredict3.0/models/scaler.pkl
 ln -fs $(pwd)/largeModels/model.pkl $(pwd)/tools/Dispredict3.0/models/model.pkl
