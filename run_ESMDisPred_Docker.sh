@@ -29,8 +29,10 @@ docker run  -it \
 	-v $(pwd)/features:$ESMpath/features:rw \
 	-v $(pwd)/largeModels:$ESMpath/largeModels:rw \
 	--entrypoint /bin/bash \
-	wasicse/esmdispred:latest \
-	-c $ESMpath/run_ESMDisPred.sh ; /bin/bash
+	wasicse/esmdispred:latest 
+	
+	# \
+	# -c $ESMpath/run_ESMDisPred.sh ; /bin/bash
 
 
 

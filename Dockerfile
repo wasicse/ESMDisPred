@@ -16,12 +16,18 @@ RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 # RUN pyenv install ${PYTHON_VERSION2} && \
 #       pyenv global ${PYTHON_VERSION2}
 
-RUN echo "Cloning ESMDisPred from github..."      
-RUN git clone https://github.com/wasicse/ESMDisPred.git && \
+RUN mkdir -p /opt/ESMDisPred
+WORKDIR "/opt/ESMDisPred"
+
+RUN wget https://raw.githubusercontent.com/wasicse/ESMDisPred/master/install_dependencies.sh
+RUN chmod +x install_dependencies.sh
+RUN ./install_dependencies.sh
+
+RUN echo "Cloning ESMDisPred from github"      
+RUN git clone https://github.com/wasicse/ESMDisPred.git . && \
 chmod -R 777 /opt/ESMDisPred
 WORKDIR "/opt/ESMDisPred"
 
-RUN ./install_dependencies.sh
 
 ENTRYPOINT [ "/bin/bash" ]
 

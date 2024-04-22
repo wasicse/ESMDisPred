@@ -57,4 +57,4 @@ else
 	echo "ESMDispred dependencies already installed"
 fi
 
-ln -fs $(pwd)/.venv $(pwd)/tools/Dispredict3.0/.venv
+

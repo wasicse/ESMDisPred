@@ -61,6 +61,9 @@ docker pull wasicse/esmdispred:latest
 
 ```
 ./run_ESMDisPred_Docker.sh $(pwd)/example/sample.fasta outputs
+git fetch origin master
+git reset --hard FETCH_HEAD
+./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 
 ## Run with Singularity 
