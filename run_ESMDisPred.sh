@@ -89,8 +89,7 @@ mkdir -p $output_dir_path
 mkdir -p $fetures_dir/Dispredict3.0 
 
 chmod -R 777 $fetures_dir
-# link Env for Dispredict3.0
-ln -fs $(pwd)/.venv $(pwd)/tools/Dispredict3.0/.venv
+
 # # Run ESMDisPred
 cd scripts
 # Save Memory Usages
