@@ -14,6 +14,8 @@ if [ "$dryRun" == "1" ]
 then
     echo "Dry Run for Building Docker Image"
     model="ESM2PDBDisPred"
+    rm -rf features
+    rm -rf outputs
 else
     echo "Running ESMDisPred"
     PS3='Please enter your choice: '

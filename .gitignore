@@ -22,3 +22,5 @@ swissprot.phr
 poetry.lock
 tools/Dispredict3.0/ParallelDispredict3.0/temp
 tools/Dispredict3.0/ParallelDispredict3.0/outputs
+largeModels
+tools/Dispredict3.0/tools/fldpnn/output
