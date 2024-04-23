@@ -3,16 +3,17 @@
 # Download large models 
 mkdir -p largeModels
 cd largeModels
-wget -nvc https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t33_650M_UR50D.pt
-wget -nvc https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
-wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.psq
-wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.phr
-wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/scaler.pkl
-wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/pca.pkl
-wget -nvc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl
-wget -nvc https://dl.fbaipublicfiles.com/fair-esm/regression/esm1b_t33_650M_UR50S-contact-regression.pt
-wget -nvc https://dl.fbaipublicfiles.com/fair-esm/regression/esm2_t33_650M_UR50D-contact-regression.pt
-
+echo "Downloading Dispredict3.0 models"
+wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.psq
+wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.phr
+wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/scaler.pkl
+wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/pca.pkl
+wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl
+echo "Downloading EMS models"
+wget -nc https://dl.fbaipublicfiles.com/fair-esm/regression/esm1b_t33_650M_UR50S-contact-regression.pt
+wget -nc https://dl.fbaipublicfiles.com/fair-esm/regression/esm2_t33_650M_UR50D-contact-regression.pt
+wget -nc https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t33_650M_UR50D.pt
+wget -nc https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
 # Create symbolic links
 echo "Creating symbolic links"
 

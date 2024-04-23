@@ -12,12 +12,13 @@ These instructions will help to install and start the ESMDisPred on the local ma
 
 ESMDisPred has been tested on Ubuntu 20.04. You need to have Pyenv installed on your local machine. ESMDisPred can be executed on a local Linux machine or within Docker and Singularity containers.
 
-### Download the code
+### Download the Code and Data
 
-- Retrieve the code
+- Retrieve the code and large models
 
 ```
 git clone https://github.com/wasicse/ESMDisPred.git
+./run_downloadLargeModels.sh
 ```
 
 ## Dataset
