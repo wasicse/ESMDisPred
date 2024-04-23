@@ -58,7 +58,7 @@ docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#mas
 docker pull wasicse/esmdispred:latest
 ```
 #### Run ESMDisPred using Docker image
-- Create the ESMDisPred container. The script will mount input fasta, features nad outputs directorries form the current (ESMDisPred) directory (downlaoded from GitHub) into the docker container.
+- Create the ESMDisPred container. The script will mount input fasta, features, and outputs directories from the current (ESMDisPred) directory (downloaded from GitHub) into the docker container.
 
 ```
 ./run_ESMDisPred_Docker.sh $(pwd)/example/sample.fasta outputs
@@ -90,9 +90,9 @@ cd /opt/ESMDisPred  && ./run_ESMDisPred.sh $(pwd)/example/sample.fasta outputs
 ```
 ## Output format
 
-- The **outputs** folder should contain the results for each of the trained model including Dispredict3.0. 
+- The **outputs** folder should contain the results for each of the trained models including Dispredict3.0. 
 
-- The output directory contains the disorder probabilities for each residue in **PROTEINID.caid** file. The directory also have the "timings.csv" file and store execution time for each prediction.
+- The output directory contains the disorder probabilities for each residue in **PROTEINID.caid** file. The directory also has the "timings.csv" file and stores the execution time for each prediction.
 
 
 ## Authors
