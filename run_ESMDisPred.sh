@@ -117,15 +117,17 @@ cd -
 # Current Directory 
 # echo "Current Directory: $(pwd)"
 # check if directory is owned by the user
-if [ "$(stat -c "%U" "features/Dispredict3.0")" == "$USER" ]
-then
-    chmod -R 777 features/*
-fi
-if [ "$(stat -c "%U" "outputs/disorder")" == "$USER" ]
-then
+# if [ "$(stat -c "%U" "features/Dispredict3.0")" == "$USER" ]
+# then
+#     chmod -R 777 features/*
+# fi
+# if [ "$(stat -c "%U" "outputs/disorder")" == "$USER" ]
+# then
 
-    chmod -R 777 outputs/*
-fi
+#     chmod -R 777 outputs/*
+# fi
+chmod -R 777 features/*
+chmod -R 777 outputs/*
 if [ "$dryRun" == "1" ]
 then
     echo "Dry Run. Removing features and outputs directories"
