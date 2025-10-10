@@ -193,7 +193,7 @@ If you use **ESMDisPred**, please cite:
 
 ---
 
-## 👥 Authors & Contact
+## Authors & Contact
 
 **Md Wasi Ul Kabir**, **Md Tamjidul Hoque**
 Questions/Issues: **Md Tamjidul Hoque** — [thoque@uno.edu](mailto:thoque@uno.edu)
