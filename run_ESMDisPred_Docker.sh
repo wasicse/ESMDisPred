@@ -30,6 +30,8 @@ docker run --rm  -it \
 	-v $(pwd)/$output_dir:$ESMpath/outputs:rw \
 	-v $(pwd)/features:$ESMpath/features:rw \
 	-v $(pwd)/largeModels:$ESMpath/largeModels:rw \
+	-v $(pwd)/run_ESMDisPred.sh:$ESMpath/run_ESMDisPred.sh \
+	-v $(pwd)/scripts/transformer_Inference.py:$ESMpath/scripts/transformer_Inference.py \
 	--entrypoint /bin/bash \
 	wasicse/esmdispred:latest 	
 

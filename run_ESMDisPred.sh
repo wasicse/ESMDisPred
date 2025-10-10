@@ -1,137 +1,154 @@
-#! /bin/bash
+#!/bin/bash
+# ================================================================
+# ESMDisPred Launcher
+# ------------------------------------------------
+# Structure-Aware CNN–Transformer Framework for
+# Intrinsically Disordered Protein (IDP) Prediction
+# ================================================================
 
-# change torch cache directory
+set -e  # exit on error
+
+# ------------------------------------------------
+# 0. Environment setup
+# ------------------------------------------------
 export TORCH_HOME=$(pwd)/.cache
-
+export TORCH_HOME=/opt/ESMDisPred/largeModels
 dryRun=$1
 
-echo "Downloading Large Models...."
+echo "================================================="
+echo " ESMDisPred - Intrinsically Disordered Protein Prediction"
+echo "================================================="
+
+echo "→ Downloading large models..."
 ./run_downloadLargeModels.sh
 
-# check if dryRun is set to 1 for docker image build
-if [ "$dryRun" == "1" ]
-then
-    echo "Dry Run for Building Docker Image"
+
+# ================================================================
+# 1. Dry run setup (used during Docker image build)
+# ================================================================
+if [ "$dryRun" == "1" ]; then
+    echo "[Dry Run Mode] Setting up environment for Docker build..."
     model="ESM2PDBDisPred"
-    rm -rf features
-    rm -rf outputs
+    rm -rf features outputs
 
-        # read n
-    # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
     n=1
-    # local python path
     localpythonPath="../.venv/bin/python"
-    # input fasta file
     input_fasta="$(pwd)/example/sample.fasta"
-    # input_fasta=$1
-    # output directory for features
-    fetures_dir="features"
-    # output directory for predictions
+    features_dir="features"
     output_dir_path="outputs/"
-    # output_dir_path=$2/
-else
-    echo "Running ESMDisPred"
-    echo $input_fasta
-    echo $output_dir
 
-    if [ -z "$1" ] || [ -z "$2" ]
-    then
-        echo "Please provide input fasta file and output directory"
+# ================================================================
+# 2. Normal execution mode
+# ================================================================
+else
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Usage: $0 <input_fasta> <output_dir>"
         exit 1
     fi
 
-    PS3='Please enter your choice: '
-    options=("ESMDisPred" "ESM2DisPred" "ESM2PDBDisPred" "Quit")
-    select opt in "${options[@]}"
-    do
-    case $opt in
-        "ESMDisPred")
-            echo "Running with DisPredict3.0 and ESM1 features"
-            esmpOption="ESMDisPred"
-            break
-            ;;
-        "ESM2DisPred")
-            echo "Running with DisPredict3.0, ESM1 and ESM2 features"
-            esmpOption="ESM2DisPred"
-            break
-            ;;      
-        "ESM2PDBDisPred")
-            echo "Running with DisPredict3.0, ESM1, ESM2 and structure related features"
-            esmpOption="ESM2PDBDisPred"
-            break
-            ;;    
-        "Quit")
-            exit 0
-            ;;
-        *) echo "invalid option $REPLY";;
-    esac
-    done
-
-    model=$esmpOption
-
-
-    # read n
-    # Parallel run for Dispredict3.0 using multiple Docker containers.The parallel run should be less than the number of protein sequcnecs in input fasta file."
-    n=1
-    # local python path
-    localpythonPath="../.venv/bin/python"
-    # input fasta file
-    # input_fasta="$(pwd)/example/sample.fasta"
     input_fasta=$1
-    # output directory for features
-    fetures_dir="features"
-    # output directory for predictions
-    # output_dir_path="outputs/"
     output_dir_path=$2/
+    localpythonPath="../.venv/bin/python"
+
+    echo "Running ESMDisPred pipeline"
+    echo "Input FASTA: $input_fasta"
+    echo "Output Dir : $output_dir_path"
+
+    echo "Select model variant:"
+echo "1) ESMDisPred-1  (DisPredict3.0 + ESM1)"
+echo "2) ESMDisPred-2  (DisPredict3.0 + ESM1 + ESM2)"
+echo "3) ESMDisPred-2PDB  (DisPredict3.0 + ESM1 + ESM2 + PDB features)"
+echo "4) ESMDisPred-DNN  (CNN–Transformer hybrid)"
+echo "5) Quit"
+read -p "Enter choice [1-5]: " choice
+
+case $choice in
+    1)
+        echo "→ Running with DisPredict3.0 + ESM1 features"
+        model="ESMDisPred"
+        ;;
+    2)
+        echo "→ Running with DisPredict3.0 + ESM1 + ESM2 features"
+        model="ESM2DisPred"
+        ;;
+    3)
+        echo "→ Running with DisPredict3.0 + ESM1 + ESM2 + PDB structural features"
+        model="ESM2PDBDisPred"
+        ;;
+    4)
+        echo "→ Running with CNN–Transformer hybrid model (DisPredict3.0 + ESM1 + ESM2 + structure features)"
+        model="ESMDisPredDNN"
+        ;;
+    5)
+        echo "Exiting..."
+        exit 0
+        ;;
+    *)
+        echo "Invalid option. Please select a number between 1 and 5."
+        exit 1
+        ;;
+esac
+
+    n=1
+    features_dir="features"
 fi
 
-# Create output directories
-mkdir -p $fetures_dir
-mkdir -p $output_dir_path
-mkdir -p $fetures_dir/Dispredict3.0 
 
-chmod -R 777 $fetures_dir
+# ================================================================
+# 3. Prepare directories
+# ================================================================
+echo "→ Preparing directories..."
+mkdir -p "$features_dir" "$output_dir_path" "$features_dir/Dispredict3.0"
+chmod -R 777 "$features_dir"
 
-# # Run ESMDisPred
+# ================================================================
+# 4. Run feature extraction
+# ================================================================
 cd scripts
-# Save Memory Usages
-# $localpythonPath  systemResource.py --pid $$ --model $model &
 
-# Run local Dispredict3.0 
-./run_Dispredict3.sh $input_fasta ../$fetures_dir/Dispredict3.0 
+echo "→ Extracting DisPredict3.0 features..."
+./run_Dispredict3.sh "$input_fasta" "../$features_dir/Dispredict3.0"
 
-# Run Dispredict3.0 Docker Container
-# ./run_Dispredict3_Docker.sh $input_fasta ../$fetures_dir/Dispredict3.0 $n $localpythonPath
+# Optional: use Docker version instead of local
+# ./run_Dispredict3_Docker.sh "$input_fasta" "../$features_dir/Dispredict3.0" $n "$localpythonPath"
 
-# Run ESM2
-if [ "$model" == "ESM2DisPred" ]  || [ "$model" == "ESM2PDBDisPred" ] 
-then
-    mkdir -p $fetures_dir/ESM2
-    $localpythonPath run_ESM2.py --fasta_filepath $input_fasta --output_path ../$fetures_dir/ESM2/
+# Run ESM2 if required by model
+if [[ "$model" == "ESMDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "ESMDisPredDNN" ]]; then
+    echo "→ Generating ESM2 embeddings..."
+    mkdir -p ../"$features_dir"/ESM2
+    "$localpythonPath" run_ESM2.py \
+        --fasta_filepath "$input_fasta" \
+        --output_path ../"$features_dir"/ESM2/
 fi
-# Run Predictions
 
-$localpythonPath run_ESMDisPred.py  --fasta_filepath $input_fasta --output_path ../$output_dir_path --features_path ../$fetures_dir --model $model
+# ================================================================
+# 5. Run prediction
+# ================================================================
+echo "→ Running $model prediction..."
+if [[ "$model" == "ESMDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "ESM2PDBDisPred" ]]; then
+            echo "Running ESMDispred..."
+        "$localpythonPath" run_ESMDisPred.py \
+            --fasta_filepath "$input_fasta" \
+            --output_path ../"$output_dir_path" \
+            --features_path ../"$features_dir" \
+            --model "$model"
+        else
+            echo "Running ESMDispred-DNN"
+            "$localpythonPath" transformer_Inference.py \
+            --run-dir ../models \           
+            --output predictions.csv
+    fi
 
-cd -
-# Current Directory 
-# echo "Current Directory: $(pwd)"
-# check if directory is owned by the user
-# if [ "$(stat -c "%U" "features/Dispredict3.0")" == "$USER" ]
-# then
-#     chmod -R 777 features/*
-# fi
-# if [ "$(stat -c "%U" "outputs/disorder")" == "$USER" ]
-# then
+cd - > /dev/null
 
-#     chmod -R 777 outputs/*
-# fi
-chmod -R 777 features/*
-chmod -R 777 outputs/*
-if [ "$dryRun" == "1" ]
-then
-    echo "Dry Run. Removing features and outputs directories"
-    rm -rf features
-    rm -rf outputs
+# ================================================================
+# 6. Cleanup and permissions
+# ================================================================
+chmod -R 777 features outputs
 
+if [ "$dryRun" == "1" ]; then
+    echo "[Dry Run Complete] Cleaning temporary directories..."
+    rm -rf features outputs
 fi
+
+echo "✅ ESMDisPred run complete!"

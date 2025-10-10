@@ -3,17 +3,24 @@
 # Download large models 
 mkdir -p largeModels
 cd largeModels
-echo "Downloading Dispredict3.0 models"
-wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.psq
-wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.phr
-wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/scaler.pkl
-wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/pca.pkl
-wget -nc https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl
-echo "Downloading EMS models"
-wget -nc https://dl.fbaipublicfiles.com/fair-esm/regression/esm1b_t33_650M_UR50S-contact-regression.pt
-wget -nc https://dl.fbaipublicfiles.com/fair-esm/regression/esm2_t33_650M_UR50D-contact-regression.pt
-wget -nc https://dl.fbaipublicfiles.com/fair-esm/models/esm2_t33_650M_UR50D.pt
-wget -nc https://dl.fbaipublicfiles.com/fair-esm/models/esm1b_t33_650M_UR50S.pt
+echo "Downloading Dispredict3.0 models from Hugging Face"
+
+# SwissProt DB files
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/swissprot.psq
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/swissprot.phr
+
+# Dispredict model files
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/scaler.pkl
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/pca.pkl
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/model.pkl
+
+echo "Downloading ESM models from Hugging Face"
+
+# ESM model files (ensure they were uploaded)
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/esm1b_t33_650M_UR50S-contact-regression.pt
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/esm2_t33_650M_UR50D-contact-regression.pt
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/esm2_t33_650M_UR50D.pt
+wget -nc https://huggingface.co/wasicse/dispred/resolve/main/esm1b_t33_650M_UR50S.pt
 # Create symbolic links
 echo "Creating symbolic links"
 

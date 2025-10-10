@@ -7,7 +7,7 @@ import joblib
 import numpy as np
 import warnings
 from Bio import SeqIO
-import gdown
+# import gdown
 import subprocess
 from optparse import OptionParser
 import os
@@ -28,40 +28,40 @@ os.environ['PYTHONHASHSEED']=str(seed_value)
 random.seed(seed_value) 
 np.random.seed(seed_value) 
 
-def loadModels():
-    # print("Loading models...")
-    output = parent_path+"/models/model.pkl"
-    path = pathlib.Path(output)
-    if not path.is_file():
+# def loadModels():
+#     # print("Loading models...")
+#     output = parent_path+"/models/model.pkl"
+#     path = pathlib.Path(output)
+#     if not path.is_file():
         
-        url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl"
-        gdown.download(url=url, output=output, quiet=False, fuzzy=True)
+#         url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/model.pkl"
+#         gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
-    output = parent_path+"/models/pca.pkl"
-    path = pathlib.Path(output)
-    if not path.is_file():
-        url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/pca.pkl"
-        gdown.download(url=url, output=output, quiet=False, fuzzy=True)
+#     output = parent_path+"/models/pca.pkl"
+#     path = pathlib.Path(output)
+#     if not path.is_file():
+#         url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/pca.pkl"
+#         gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
-    output = parent_path+"/models/scaler.pkl"
-    path = pathlib.Path(output)
-    if not path.is_file():
-        url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/scaler.pkl"
-        gdown.download(url=url, output=output, quiet=False, fuzzy=True)
+#     output = parent_path+"/models/scaler.pkl"
+#     path = pathlib.Path(output)
+#     if not path.is_file():
+#         url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/models/scaler.pkl"
+#         gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
 
 
-    output = parent_path+"/tools/fldpnn/programs/blast-2.2.24/db/swissprot.psq"
-    path = pathlib.Path(output)
-    if not path.is_file():
-        url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.psq"
-        gdown.download(url=url, output=output, quiet=False, fuzzy=True)
+#     output = parent_path+"/tools/fldpnn/programs/blast-2.2.24/db/swissprot.psq"
+#     path = pathlib.Path(output)
+#     if not path.is_file():
+#         url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.psq"
+#         gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
-    output = parent_path+"/tools/fldpnn/programs/blast-2.2.24/db/swissprot.phr"
-    path = pathlib.Path(output)
-    if not path.is_file():
-        url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.phr"
-        gdown.download(url=url, output=output, quiet=False, fuzzy=True)
+#     output = parent_path+"/tools/fldpnn/programs/blast-2.2.24/db/swissprot.phr"
+#     path = pathlib.Path(output)
+#     if not path.is_file():
+#         url = "https://www.cs.uno.edu/~mkabir3/Dispredict3.0/db/swissprot.phr"
+#         gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
 
 def dispredict(fasta_filepath,output_path):
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     workspace=parent_path+"/models"
     pathlib.Path(workspace).mkdir(parents=True, exist_ok=True)
 
-    loadModels()
+    # loadModels()
     
     dispredict(options.fasta_filepath,options.output_path)
     
