@@ -49,6 +49,7 @@ else
     input_fasta=$1
     output_dir_path=$2/
     localpythonPath="../.venv/bin/python"
+    localpythonPath2="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
 
     echo "Running ESMDisPred pipeline"
     echo "Input FASTA: $input_fasta"
@@ -65,19 +66,19 @@ read -p "Enter choice [1-5]: " choice
 case $choice in
     1)
         echo "→ Running with DisPredict3.0 + ESM1 features"
-        model="ESMDisPred"
+        model="ESMDisPred-1"
         ;;
     2)
         echo "→ Running with DisPredict3.0 + ESM1 + ESM2 features"
-        model="ESM2DisPred"
+        model="ESMDisPred-2"
         ;;
     3)
-        echo "→ Running with DisPredict3.0 + ESM1 + ESM2 + PDB structural features"
-        model="ESM2PDBDisPred"
+        echo "→ Running with DisPredict3.0 + ESM1 + ESM2 + PDB structural information"
+        model="ESMDisPred-2PDB"
         ;;
     4)
-        echo "→ Running with CNN–Transformer hybrid model (DisPredict3.0 + ESM1 + ESM2 + structure features)"
-        model="ESMDisPredDNN"
+        echo "→ Running with CNN–Transformer hybrid model (DisPredict3.0 + ESM1 + ESM2 + structure information)"
+        model="ESMDisPred-DNN"
         ;;
     5)
         echo "Exiting..."
@@ -113,7 +114,7 @@ echo "→ Extracting DisPredict3.0 features..."
 # ./run_Dispredict3_Docker.sh "$input_fasta" "../$features_dir/Dispredict3.0" $n "$localpythonPath"
 
 # Run ESM2 if required by model
-if [[ "$model" == "ESMDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "ESMDisPredDNN" ]]; then
+if [[ "$model" == "ESMDisPred-1" ||"$model" == "ESMDisPred-2" || "$model" == "ESMDisPred-2PDB" || "$model" == "ESMDisPred-DNN" ]]; then
     echo "→ Generating ESM2 embeddings..."
     mkdir -p ../"$features_dir"/ESM2
     "$localpythonPath" run_ESM2.py \
@@ -125,7 +126,7 @@ fi
 # 5. Run prediction
 # ================================================================
 echo "→ Running $model prediction..."
-if [[ "$model" == "ESMDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "ESM2PDBDisPred" ]]; then
+if [[ "$model" == "ESMDisPred-1" || "$model" == "ESMDisPred-2" || "$model" == "ESMDisPred-2PDB" ]]; then
             echo "Running ESMDispred..."
         "$localpythonPath" run_ESMDisPred.py \
             --fasta_filepath "$input_fasta" \
@@ -134,9 +135,13 @@ if [[ "$model" == "ESMDisPred" || "$model" == "ESM2PDBDisPred" || "$model" == "E
             --model "$model"
         else
             echo "Running ESMDispred-DNN"
-            "$localpythonPath" transformer_Inference.py \
-            --run-dir ../models \           
-            --output predictions.csv
+            "$localpythonPath2" transformer_Inference.py \
+            --fasta_filepath "$input_fasta" \
+            --features_path "../$features_dir" \
+            --output_path "../$output_dir_path" \
+            --model "$model" \
+            --run_dir "../models"
+                        
     fi
 
 cd - > /dev/null
@@ -151,4 +156,4 @@ if [ "$dryRun" == "1" ]; then
     rm -rf features outputs
 fi
 
-echo "✅ ESMDisPred run complete!"
+echo "ESMDisPred run complete!"

@@ -53,7 +53,7 @@ def preProcess_features(features_path,pid,method):
     
     ESM2StatsColumns=["ESM2650_mean", "ESM2650_std", "ESM2650_max", "ESM2650_min", "ESM2650_median", "ESM2650_skew", "ESM2650_kurtosis", "ESM2650_kurt", "ESM2650_var", "ESM2650_sem", "ESM2650_quantile"]
        
-    if method in ["ESM2DisPred","ESM2PDBDisPred"]:
+    if method in ["ESMDisPred-2","ESMDisPred-2PDB","ESMDisPred-DNN"]:
         if os.path.exists(features_path+"/ESM2/"+pid+'.csv'):
             df_ESM=pd.read_csv(features_path+"/ESM2/"+pid+'.csv',header=None)
             df_ESM.columns=ColumnName_ESM
@@ -108,15 +108,18 @@ def preProcess_features(features_path,pid,method):
     SelectedColumns_WithoutESM2=[f'fldpnn_{i}' for i in range(1, 318)]+[f'FLmodel_{i}' for i in range(1, 5125)]+[  "DispredProba","DispredPred" ,"Terminal_posneg"]+Windowed_columnList
     SelectedColumns_EMS2=[  "DispredProba","DispredPred" ,"Terminal_posneg"]+Windowed_columnList+ColumnName_ESM+ESM2StatsColumns+ESM2StatsWindowed_columnList
       
-    if method=="ESMDisPred":
+    if method=="ESMDisPred-1":
         # print("ESMDispred")
         SelectedColumns=SelectedColumns_WithoutESM2
-    elif method=="ESM2DisPred":
+    elif method=="ESMDisPred-2":
         # print("ESM2Dispred")
         SelectedColumns=SelectedColumns_WithESM2
-    elif method=="ESM2PDBDisPred":
+    elif method=="ESMDisPred-2PDB":
         # print("ESM2PDBDispred")
-        SelectedColumns=SelectedColumns_EMS2    
+        SelectedColumns=SelectedColumns_EMS2   
+    elif method=="ESMDisPred-DNN":
+        # print("ESMDispredDNN")
+        SelectedColumns=SelectedColumns_EMS2   
     
     # SelectedColumns=ESMDispred
     X = mergeData.loc[:, SelectedColumns]    
