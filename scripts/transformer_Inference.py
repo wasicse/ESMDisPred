@@ -264,7 +264,7 @@ def run_fasta_inference(fasta_path: str, features_path: str, output_path: str, r
         combined.to_csv(os.path.join(dnn_root, "predictions.csv"), index=False)
 
     # timings CSV (classic style)
-    timings_path = os.path.join(dnn_root, f"timings_{model_name if model_name else 'transformer'}.csv")
+    timings_path = os.path.join(output_path, f"timings_{model_name if model_name else 'transformer'}.csv")
     with open(timings_path, "w") as fh:
         ts = datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
         print(f"# Running {model_name if model_name else 'transformer'}, started {ts}", file=fh)

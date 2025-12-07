@@ -108,18 +108,18 @@ def preProcess_features(features_path,pid,method):
     SelectedColumns_WithoutESM2=[f'fldpnn_{i}' for i in range(1, 318)]+[f'FLmodel_{i}' for i in range(1, 5125)]+[  "DispredProba","DispredPred" ,"Terminal_posneg"]+Windowed_columnList
     SelectedColumns_EMS2=[  "DispredProba","DispredPred" ,"Terminal_posneg"]+Windowed_columnList+ColumnName_ESM+ESM2StatsColumns+ESM2StatsWindowed_columnList
       
+    # AFTER (add else clause):
     if method=="ESMDisPred-1":
-        # print("ESMDispred")
         SelectedColumns=SelectedColumns_WithoutESM2
     elif method=="ESMDisPred-2":
-        # print("ESM2Dispred")
         SelectedColumns=SelectedColumns_WithESM2
     elif method=="ESMDisPred-2PDB":
-        # print("ESM2PDBDispred")
         SelectedColumns=SelectedColumns_EMS2   
     elif method=="ESMDisPred-DNN":
-        # print("ESMDispredDNN")
-        SelectedColumns=SelectedColumns_EMS2   
+        SelectedColumns=SelectedColumns_EMS2
+    else:
+        raise ValueError(f"Unknown method: {method}. Must be one of: ESMDisPred-1, ESMDisPred-2, ESMDisPred-2PDB, ESMDisPred-DNN")
+    
     
     # SelectedColumns=ESMDispred
     X = mergeData.loc[:, SelectedColumns]    

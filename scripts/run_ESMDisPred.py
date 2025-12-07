@@ -108,8 +108,8 @@ if __name__ == '__main__':
     
     parser = OptionParser()
     parser.add_option("-f", "--fasta_filepath", dest="fasta_filepath", help="Path to input fasta.", default=parent_path+'/example/sample.fasta')
-    parser.add_option("-o", "--features_path", dest="features_path", help="Path to features.", default=parent_path+'/features/')
-    parser.add_option("-l", "--output_path", dest="output_path", help="Path to output.", default=parent_path+'/output/')
+    parser.add_option("-p", "--features_path", dest="features_path", help="Path to features.", default=parent_path+'/features/')
+    parser.add_option("-o", "--output_path", dest="output_path", help="Path to output.", default=parent_path+'/output/')
     parser.add_option("-t", "--model", dest="model", help="Selected model ", default="")
 
     (options, args) = parser.parse_args()
