@@ -58,6 +58,9 @@ Dataset examples are under `dataset/`. A demo FASTA is provided at `example/samp
 
 ##  Quickstart (Local OS)
 
+>  **Warning**: Running locally without Docker may fail due to missing system libraries (e.g., `libidn.so.11`) or Python package version conflicts (e.g., `scikit-learn`, `lightgbm`). **We strongly recommend using Docker or Singularity** for consistent and reproducible results. See [Run with Docker](#run-with-docker) or [Run with Singularity](#run-with-singularity) sections below.
+
+
 ### A) Install Dependencies (one command)
 
 ```bash
@@ -102,18 +105,8 @@ The helper script mounts your input FASTA, `largeModels/`, and `outputs/` into t
 
 ```bash
 # create and run the containerized job
-./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs3
-
-# (advanced) call the inner script directly after container creation
-./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs
+./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs
 ```
-
-> **GPU**: If you have NVIDIA GPUs, ensure `nvidia-container-toolkit` is installed and the script uses `--gpus all`. Otherwise, modify the script or run:
->
-> ```bash
-> docker run --rm --gpus all -v "$(pwd)":/opt/ESMDisPred -w /opt/ESMDisPred wasicse/esmdispred:latest \
->   ./run_ESMDisPred.sh /opt/ESMDisPred/example/sample.fasta /opt/ESMDisPred/outputs
-> ```
 
 ---
 

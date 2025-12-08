@@ -11,7 +11,7 @@ set -e  # exit on error
 # ------------------------------------------------
 # 0. Environment setup
 # ------------------------------------------------
-export TORCH_HOME=/opt/ESMDisPred/largeModels
+export TORCH_HOME=$(pwd)/largeModels
 dryRun=$1
 
 echo "================================================="
@@ -104,8 +104,8 @@ fi
 # ================================================================
 echo "→ Preparing directories..."
 mkdir -p "$features_dir" "$output_dir_path" "$features_dir/Dispredict3.0" 2>/dev/null || true
-chmod -R 777 "$features_dir"
-chmod -R 777 "$output_dir_path" 2>/dev/null || true
+# chmod -R 777 "$features_dir" 2>/dev/null || true
+# chmod -R 777 "$output_dir_path" 2>/dev/null || true
 
 
 # ================================================================
@@ -175,7 +175,8 @@ cd - > /dev/null
 # ================================================================
 # 7. Cleanup and permissions
 # ================================================================
-chmod -R 777 features outputs 2>/dev/null || true
+# chmod -R 777 features 2>/dev/null || true
+# chmod -R 777 outputs 2>/dev/null || true
 
 if [ "$dryRun" == "1" ]; then
     log "[Dry Run Complete] Cleaning temporary directories..."

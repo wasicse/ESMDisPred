@@ -1,28 +1,20 @@
-FROM debian:buster-slim
-RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
-apt-get update && \
-apt-get install -y --no-install-recommends make build-essential libssl-dev  wget curl llvm libidn11 openjdk-11-jre git nano tcsh sudo 
+# Start from the base image you’re using
+FROM wasicse/esmdispred:latest
 
-WORKDIR "/opt"
+# Set up environment variables
+ENV ESMpath=/opt/ESMDisPred
 
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
-ENV PYENV_ROOT="/opt/.pyenv" 
-ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
-RUN echo 'export PYENV_ROOT=/opt/.pyenv' >> ~/.bashrc 
-RUN echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc 
-RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+# Copy your local files into the container
+COPY requirements.txt $ESMpath/requirements.txt
 
-# ENV PYTHON_VERSION2=miniconda3-4.7.12
-# RUN pyenv install ${PYTHON_VERSION2} && \
-#       pyenv global ${PYTHON_VERSION2}
+# Initialize conda and set up environment
+RUN eval "$(/opt/.pyenv/versions/miniconda3-4.7.12/bin/conda shell.bash hook)" && \
+    conda create -y -n py39 python=3.9 && \
+    conda activate py39 && \
+    pip install --no-cache-dir -r $ESMpath/requirements.txt
 
-RUN echo "Cloning ESMDisPred from github."      
-RUN git clone https://github.com/wasicse/ESMDisPred.git && \
-chmod -R 777 /opt/ESMDisPred
-WORKDIR "/opt/ESMDisPred"
+# Set working directory
+WORKDIR $ESMpath
 
-RUN ./install_dependencies.sh
-
-ENTRYPOINT [ "/bin/bash" ]
-
-
+# Default command
+CMD ["/bin/bash"]

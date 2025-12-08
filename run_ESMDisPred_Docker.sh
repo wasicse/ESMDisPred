@@ -13,8 +13,9 @@ fi
 echo "Input fasta file: $input_fasta"
 echo "Output directory: $output_dir"
 
+# rm -rf "$output_dir" features largeModels
 mkdir -p "$output_dir" features largeModels
-chmod 777 "$output_dir" features largeModels
+# chmod 777 "$output_dir" features largeModels
 
 ESMpath="/opt/ESMDisPred"
 
@@ -22,6 +23,10 @@ ESMpath="/opt/ESMDisPred"
 fasta_filename=$(basename "$input_fasta")
 
 docker run -it \
+  --user $(id -u):$(id -g) \
+  -e HOME=/opt/ESMDisPred \
+  -e XDG_CACHE_HOME=/opt/ESMDisPred/.cache \
+  -e TORCH_HOME=/opt/ESMDisPred/largeModels \
   -v "$input_fasta":"$ESMpath/example/$fasta_filename" \
   -v "$(pwd)/$output_dir":"$ESMpath/outputs":rw \
   -v "$(pwd)/features":"$ESMpath/features":rw \
@@ -31,5 +36,6 @@ docker run -it \
   -v "$(pwd)/scripts/preprocess.py":"$ESMpath/scripts/preprocess.py" \
   -v "$(pwd)/models":"$ESMpath/models" \
   -v "$(pwd)/requirements.txt":"$ESMpath/requirements.txt" \
+  -v "$(pwd)/run_downloadLargeModels.sh":"$ESMpath/run_downloadLargeModels.sh" \
   wasicse/esmdispred:version2 \
   ./run_ESMDisPred.sh "$ESMpath/example/$fasta_filename" outputs

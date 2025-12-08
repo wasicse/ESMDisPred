@@ -25,6 +25,12 @@ os.environ['PYTHONHASHSEED']=str(seed_value)
 random.seed(seed_value) 
 np.random.seed(seed_value) 
 
+# Ensure TORCH_HOME is set correctly
+if 'TORCH_HOME' not in os.environ:
+    os.environ['TORCH_HOME'] = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'largeModels')
+
+# Also set torch hub directory
+os.environ['TORCH_HUB'] = os.environ['TORCH_HOME']
 
 def extractFeatures(fasta_filepath,output_path):
     
