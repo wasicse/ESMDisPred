@@ -126,7 +126,7 @@ log "=========================================================="
 log "Input FASTA: $input_fasta"
 log "Output Dir: $output_dir_path"
 log "Features Dir: $features_dir"
-log "Models to run: ${models[*]}"
+log "Models to run: ${models[*]}" 
 
 # ================================================================
 # 5. Run feature extraction (once for all models)

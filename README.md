@@ -102,7 +102,7 @@ The helper script mounts your input FASTA, `largeModels/`, and `outputs/` into t
 
 ```bash
 # create and run the containerized job
-./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs
+./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs3
 
 # (advanced) call the inner script directly after container creation
 ./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs
