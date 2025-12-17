@@ -104,9 +104,23 @@ docker pull wasicse/esmdispred:version2
 The helper script mounts your input FASTA, `largeModels/`, and `outputs/` into the container:
 
 ```bash
-# create and run the containerized job
+# Interactive mode - will prompt for model selection
 ./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs
+
+# Non-interactive mode - specify model as 3rd parameter
+./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs 3
+./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs ESMDisPred-2PDB
+./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs all
 ```
+
+**Model options (3rd parameter):**
+- `1` or `ESMDisPred-1` - DisPredict3.0 + ESM1
+- `2` or `ESMDisPred-2` - DisPredict3.0 + ESM1 + ESM2
+- `3` or `ESMDisPred-2PDB` - DisPredict3.0 + ESM1 + ESM2 + PDB features 
+- `4` or `ESMDisPred-DNN` - CNN–Transformer hybrid
+- `5` or `all` - Run ALL models
+
+If the 3rd parameter is omitted, the script will prompt you interactively to select a model.
 
 ---
 
