@@ -41,12 +41,22 @@ if [ "$dryRun" == "1" ]; then
 # ================================================================
 else
     if [ -z "$1" ] || [ -z "$2" ]; then
-        echo "Usage: $0 <input_fasta> <output_dir>"
+        echo "Usage: $0 <input_fasta> <output_dir> [model_option]"
+        echo ""
+        echo "Model options:"
+        echo "  1 or ESMDisPred-1     - DisPredict3.0 + ESM1"
+        echo "  2 or ESMDisPred-2     - DisPredict3.0 + ESM1 + ESM2"
+        echo "  3 or ESMDisPred-2PDB  - DisPredict3.0 + ESM1 + ESM2 + PDB"
+        echo "  4 or ESMDisPred-DNN   - CNN–Transformer hybrid"
+        echo "  5 or all              - Run ALL models"
+        echo ""
+        echo "If model_option is not provided, you will be prompted interactively."
         exit 1
     fi
 
     input_fasta=$1
     output_dir_path=$2/
+    model_choice=${3:-}  # Optional third parameter
     localpythonPath="../.venv/bin/python"
     localpythonPath2="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
 
@@ -54,42 +64,51 @@ else
     echo "Input FASTA: $input_fasta"
     echo "Output Dir : $output_dir_path"
 
-    echo "Select model variant:"
-    echo "1) ESMDisPred-1  (DisPredict3.0 + ESM1)"
-    echo "2) ESMDisPred-2  (DisPredict3.0 + ESM1 + ESM2)"
-    echo "3) ESMDisPred-2PDB  (DisPredict3.0 + ESM1 + ESM2 + PDB features)"
-    echo "4) ESMDisPred-DNN  (CNN–Transformer hybrid)"
-    echo "5) Run ALL models"
-    echo "6) Quit"
-    read -p "Enter choice [1-6]: " choice
+    # If model choice provided as parameter, use it
+    if [ -n "$model_choice" ]; then
+        choice="$model_choice"
+        echo "Using model option from parameter: $choice"
+    else
+        # Interactive mode
+        echo "Select model variant:"
+        echo "1) ESMDisPred-1  (DisPredict3.0 + ESM1)"
+        echo "2) ESMDisPred-2  (DisPredict3.0 + ESM1 + ESM2)"
+        echo "3) ESMDisPred-2PDB  (DisPredict3.0 + ESM1 + ESM2 + PDB features)"
+        echo "4) ESMDisPred-DNN  (CNN–Transformer hybrid)"
+        echo "5) Run ALL models"
+        echo "6) Quit"
+        read -p "Enter choice [1-6]: " choice
+    fi
 
+    # Process the choice
     case $choice in
-        1)
+        1|ESMDisPred-1)
             echo "→ Running with DisPredict3.0 + ESM1 features"
             models=("ESMDisPred-1")
             ;;
-        2)
+        2|ESMDisPred-2)
             echo "→ Running with DisPredict3.0 + ESM1 + ESM2 features"
             models=("ESMDisPred-2")
             ;;
-        3)
+        3|ESMDisPred-2PDB)
             echo "→ Running with DisPredict3.0 + ESM1 + ESM2 + PDB structural information"
             models=("ESMDisPred-2PDB")
             ;;
-        4)
+        4|ESMDisPred-DNN)
             echo "→ Running with CNN–Transformer hybrid model"
             models=("ESMDisPred-DNN")
             ;;
-        5)
+        5|all|ALL)
             echo "→ Running ALL models"
             models=("ESMDisPred-1" "ESMDisPred-2" "ESMDisPred-2PDB" "ESMDisPred-DNN")
             ;;
-        6)
+        6|quit|QUIT)
             echo "Exiting..."
             exit 0
             ;;
         *)
-            echo "Invalid option. Please select a number between 1 and 6."
+            echo "Invalid option: $choice"
+            echo "Valid options: 1, 2, 3, 4, 5, ESMDisPred-1, ESMDisPred-2, ESMDisPred-2PDB, ESMDisPred-DNN, all"
             exit 1
             ;;
     esac
