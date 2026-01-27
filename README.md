@@ -180,28 +180,41 @@ Inside `outputs/` you’ll find:
 
 If you use **ESMDisPred**, please cite:
 
-1. Md Wasi Ul Kabir, and Md Tamjidul Hoque. “DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model.” *Applied Mathematics and Computation* 472 (July 2024): 128630. [https://doi.org/10.1016/j.amc.2024.128630](https://doi.org/10.1016/j.amc.2024.128630).
+1. Md Wasi Ul Kabir, Ayon Dey, Farzeen Nafees, and Md Tamjidul Hoque. "ESMDisPred: A Structure-Aware CNN-Transformer Architecture for Intrinsically Disordered Protein Prediction." *bioRxiv* (2026). [https://doi.org/10.64898/2026.01.22.701204](https://doi.org/10.64898/2026.01.22.701204).
+
+2. Md Wasi Ul Kabir, and Md Tamjidul Hoque. "DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model." *Applied Mathematics and Computation* 472 (July 2024): 128630. [https://doi.org/10.1016/j.amc.2024.128630](https://doi.org/10.1016/j.amc.2024.128630).
 
 
-<!-- > ** BibTeX block**
->
-> ```bibtex
-> @article{Kabir2024DisPredict3,
->   title={DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model},
->   author={Kabir, Md Wasi Ul and Hoque, Md Tamjidul},
->   journal={Applied Mathematics and Computation},
->   volume={472},
->   pages={128630},
->   year={2024},
->   doi={10.1016/j.amc.2024.128630}
-> }
-> ``` -->
+<details>
+<summary><b>BibTeX</b></summary>
+
+```bibtex
+@article{Kabir2026ESMDisPred,
+  author = {Kabir, Md Wasi Ul and Dey, Ayon and Nafees, Farzeen and Hoque, Md Tamjidul},
+  title = {ESMDisPred: A Structure-Aware CNN-Transformer Architecture for Intrinsically Disordered Protein Prediction},
+  year = {2026},
+  doi = {10.64898/2026.01.22.701204},
+  publisher = {Cold Spring Harbor Laboratory},
+  journal = {bioRxiv}
+}
+
+@article{Kabir2024DisPredict3,
+  title = {DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model},
+  author = {Kabir, Md Wasi Ul and Hoque, Md Tamjidul},
+  journal = {Applied Mathematics and Computation},
+  volume = {472},
+  pages = {128630},
+  year = {2024},
+  doi = {10.1016/j.amc.2024.128630}
+}
+```
+</details>
 
 ---
 
 ## Authors & Contact
 
-**Md Wasi Ul Kabir**, **Md Tamjidul Hoque**
+**Md Wasi Ul Kabir**, **Md Tamjidul Hoque**  
 Questions/Issues: **Md Tamjidul Hoque** — [thoque@uno.edu](mailto:thoque@uno.edu)
 
 ---
