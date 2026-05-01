@@ -32,6 +32,16 @@ if [ "$dryRun" == "1" ]; then
 
     n=1
     localpythonPath="../.venv/bin/python"
+    _docker_py="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
+    _local_py="$(pwd)/.venv_py39/bin/python"
+    if [ -f "$_docker_py" ]; then
+        localpythonPath2="$_docker_py"
+    elif [ -f "$_local_py" ]; then
+        localpythonPath2="$_local_py"
+    else
+        echo "ERROR: conda py39 environment not found. Run ./install_dependencies.sh first."
+        exit 1
+    fi
     input_fasta="$(pwd)/example/sample.fasta"
     features_dir="features"
     output_dir_path="outputs/"
@@ -58,7 +68,16 @@ else
     output_dir_path=$2/
     model_choice=${3:-}  # Optional third parameter
     localpythonPath="../.venv/bin/python"
-    localpythonPath2="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
+    _docker_py="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
+    _local_py="$(pwd)/.venv_py39/bin/python"
+    if [ -f "$_docker_py" ]; then
+        localpythonPath2="$_docker_py"
+    elif [ -f "$_local_py" ]; then
+        localpythonPath2="$_local_py"
+    else
+        echo "ERROR: conda py39 environment not found. Run ./install_dependencies.sh first."
+        exit 1
+    fi
 
     echo "Running ESMDisPred pipeline"
     echo "Input FASTA: $input_fasta"

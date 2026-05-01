@@ -27,6 +27,9 @@ download_file "scaler.pkl" "https://huggingface.co/wasicse/dispred/resolve/main/
 download_file "pca.pkl" "https://huggingface.co/wasicse/dispred/resolve/main/pca.pkl"
 download_file "model.pkl" "https://huggingface.co/wasicse/dispred/resolve/main/model.pkl"
 
+# ESMDisPred-DNN model
+download_file "best.pt" "https://huggingface.co/wasicse/dispred/resolve/main/best.pt"
+
 # ESM model files
 download_file "esm1b_t33_650M_UR50S-contact-regression.pt" "https://huggingface.co/wasicse/dispred/resolve/main/esm1b_t33_650M_UR50S-contact-regression.pt"
 download_file "esm2_t33_650M_UR50D-contact-regression.pt" "https://huggingface.co/wasicse/dispred/resolve/main/esm2_t33_650M_UR50D-contact-regression.pt"
@@ -43,6 +46,9 @@ fi
 cd - > /dev/null
 
 # Create symbolic links (silently)
+mkdir -p models
+ln -fs $(pwd)/largeModels/best.pt $(pwd)/models/best.pt
+
 mkdir -p tools/Dispredict3.0/models
 ln -fs $(pwd)/largeModels/pca.pkl $(pwd)/tools/Dispredict3.0/models/pca.pkl
 ln -fs $(pwd)/largeModels/scaler.pkl $(pwd)/tools/Dispredict3.0/models/scaler.pkl
