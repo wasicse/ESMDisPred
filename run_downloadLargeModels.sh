@@ -43,23 +43,25 @@ fi
 
 cd "$SCRIPT_DIR"
 
-# Symlinks — all using absolute paths anchored to SCRIPT_DIR
-mkdir -p "$SCRIPT_DIR/models"
-ln -fs "$SCRIPT_DIR/largeModels/best.pt" "$SCRIPT_DIR/models/best.pt"
+# Symlinks — all using absolute paths anchored to SCRIPT_DIR.
+# ln may fail silently in non-root Docker if the parent dir is read-only;
+# the container's baked-in symlinks are used as fallback in that case.
+mkdir -p "$SCRIPT_DIR/models" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/best.pt" "$SCRIPT_DIR/models/best.pt" 2>/dev/null || true
 
-mkdir -p "$SCRIPT_DIR/tools/Dispredict3.0/models"
-ln -fs "$SCRIPT_DIR/largeModels/pca.pkl"    "$SCRIPT_DIR/tools/Dispredict3.0/models/pca.pkl"
-ln -fs "$SCRIPT_DIR/largeModels/scaler.pkl" "$SCRIPT_DIR/tools/Dispredict3.0/models/scaler.pkl"
-ln -fs "$SCRIPT_DIR/largeModels/model.pkl"  "$SCRIPT_DIR/tools/Dispredict3.0/models/model.pkl"
+mkdir -p "$SCRIPT_DIR/tools/Dispredict3.0/models" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/pca.pkl"    "$SCRIPT_DIR/tools/Dispredict3.0/models/pca.pkl"    2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/scaler.pkl" "$SCRIPT_DIR/tools/Dispredict3.0/models/scaler.pkl" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/model.pkl"  "$SCRIPT_DIR/tools/Dispredict3.0/models/model.pkl"  2>/dev/null || true
 
-mkdir -p "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db"
-ln -fs "$SCRIPT_DIR/largeModels/swissprot.psq" "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db/swissprot.psq"
-ln -fs "$SCRIPT_DIR/largeModels/swissprot.phr" "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db/swissprot.phr"
+mkdir -p "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/swissprot.psq" "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db/swissprot.psq" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/swissprot.phr" "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db/swissprot.phr" 2>/dev/null || true
 
-mkdir -p "$SCRIPT_DIR/.cache/hub/checkpoints"
-ln -fs "$SCRIPT_DIR/largeModels/esm1b_t33_650M_UR50S.pt"                    "$SCRIPT_DIR/.cache/hub/checkpoints/esm1b_t33_650M_UR50S.pt"
-ln -fs "$SCRIPT_DIR/largeModels/esm2_t33_650M_UR50D.pt"                     "$SCRIPT_DIR/.cache/hub/checkpoints/esm2_t33_650M_UR50D.pt"
-ln -fs "$SCRIPT_DIR/largeModels/esm1b_t33_650M_UR50S-contact-regression.pt" "$SCRIPT_DIR/.cache/hub/checkpoints/esm1b_t33_650M_UR50S-contact-regression.pt"
-ln -fs "$SCRIPT_DIR/largeModels/esm2_t33_650M_UR50D-contact-regression.pt"  "$SCRIPT_DIR/.cache/hub/checkpoints/esm2_t33_650M_UR50D-contact-regression.pt"
+mkdir -p "$SCRIPT_DIR/.cache/hub/checkpoints" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/esm1b_t33_650M_UR50S.pt"                    "$SCRIPT_DIR/.cache/hub/checkpoints/esm1b_t33_650M_UR50S.pt"                    2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/esm2_t33_650M_UR50D.pt"                     "$SCRIPT_DIR/.cache/hub/checkpoints/esm2_t33_650M_UR50D.pt"                     2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/esm1b_t33_650M_UR50S-contact-regression.pt" "$SCRIPT_DIR/.cache/hub/checkpoints/esm1b_t33_650M_UR50S-contact-regression.pt" 2>/dev/null || true
+ln -fs "$SCRIPT_DIR/largeModels/esm2_t33_650M_UR50D-contact-regression.pt"  "$SCRIPT_DIR/.cache/hub/checkpoints/esm2_t33_650M_UR50D-contact-regression.pt"  2>/dev/null || true
 
-echo "Symbolic links created."
+echo "Symbolic links updated (failures silenced — baked-in container links used as fallback)."

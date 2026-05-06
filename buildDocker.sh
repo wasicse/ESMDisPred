@@ -1,7 +1,9 @@
 #! /bin/bash
+set -e
 
-docker build -t wasicse/esmdispred - < Dockerfile
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
-# docker commit CONTAINERNAME  wasicse/esmdispred:latest
+docker build -t wasicse/esmdispred:latest .
 
-docker push  wasicse/esmdispred:latest
+# docker push wasicse/esmdispred:latest

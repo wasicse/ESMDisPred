@@ -319,17 +319,19 @@ inout_dir = os.path.dirname(in_path)
 
 cwd = os.getcwd()
 os.chdir(flDPnn_folder)
-os.mkdir(taskid)
+# Use /tmp as temp base when script dir is not writable (e.g. non-root Docker)
+tmp_base = flDPnn_folder if os.access(flDPnn_folder, os.W_OK) else '/tmp'
+os.makedirs(os.path.join(tmp_base, taskid), exist_ok=True)
 
 
 
-# os.system("cp "+in_path+" " + flDPnn_folder + "/" + taskid + "/seqs.fasta")
+# os.system("cp "+in_path+" " + tmp_base + "/" + taskid + "/seqs.fasta")
 
-seqids, seqs = read_and_prepare_fasta(in_path, flDPnn_folder + "/" + taskid + "/seqs.fasta")
+seqids, seqs = read_and_prepare_fasta(in_path, tmp_base + "/" + taskid + "/seqs.fasta")
 
 
 
-os.system("./DisoComb.sh " + flDPnn_folder + "/" + taskid + "/seqs.fasta > /dev/null")
+os.system("./DisoComb.sh " + tmp_base + "/" + taskid + "/seqs.fasta > /dev/null")
 
 # os.system("cp "+flDPnn_folder+"/"+taskid+"/result.csv "+out_path)
 
@@ -393,6 +395,6 @@ os.system("./DisoComb.sh " + flDPnn_folder + "/" + taskid + "/seqs.fasta > /dev/
 # os.system("python3 "+flDPnn_folder+"/flDPnn_Function_workflow.py "+inout_dir+"/results.csv")
 # write_to_html(seqids,warnings,nodis_flags, res_df_list,inout_dir+"/results.html")
 
-os.system("rm -r "+flDPnn_folder+"/"+taskid)
+os.system("rm -r "+tmp_base+"/"+taskid)
 #
 os.chdir(cwd)

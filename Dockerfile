@@ -1,9 +1,9 @@
-# Full self-contained build — no longer depends on a pre-built base image.
+# Full self-contained build — copies local files (no git clone needed).
 FROM python:3.10-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         make build-essential libssl-dev wget curl git nano tcsh \
-        openjdk-11-jre libidn11 libidn12 llvm \
+        default-jre libidn12 llvm \
     && rm -rf /var/lib/apt/lists/*
 
 # Ensure libidn.so.11 exists — bundled psiblast requires it
@@ -21,12 +21,44 @@ ENV TORCH_HOME=${ESMpath}/largeModels
 
 WORKDIR ${ESMpath}
 
-# Clone repo and install Python dependencies
-RUN git clone https://github.com/wasicse/ESMDisPred.git . && \
-    chmod -R 755 . && \
+# Copy local repo (features/, largeModels/, outputs/ excluded via .dockerignore)
+COPY . .
+
+# Recreate symlinks with container-absolute paths.
+# COPY carries local host paths (e.g. /home/mkabir3/...); at runtime largeModels/
+# is mounted at /opt/ESMDisPred/largeModels so we need that prefix here.
+RUN ln -fs /opt/ESMDisPred/largeModels/model.pkl   tools/Dispredict3.0/models/model.pkl && \
+    ln -fs /opt/ESMDisPred/largeModels/pca.pkl     tools/Dispredict3.0/models/pca.pkl && \
+    ln -fs /opt/ESMDisPred/largeModels/scaler.pkl  tools/Dispredict3.0/models/scaler.pkl && \
+    ln -fs /opt/ESMDisPred/largeModels/swissprot.psq \
+        tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db/swissprot.psq && \
+    ln -fs /opt/ESMDisPred/largeModels/swissprot.phr \
+        tools/Dispredict3.0/tools/fldpnn/programs/blast-2.2.24/db/swissprot.phr && \
+    mkdir -p .cache/hub/checkpoints && \
+    ln -fs /opt/ESMDisPred/largeModels/esm1b_t33_650M_UR50S.pt \
+        .cache/hub/checkpoints/esm1b_t33_650M_UR50S.pt && \
+    ln -fs /opt/ESMDisPred/largeModels/esm2_t33_650M_UR50D.pt \
+        .cache/hub/checkpoints/esm2_t33_650M_UR50D.pt && \
+    ln -fs /opt/ESMDisPred/largeModels/esm1b_t33_650M_UR50S-contact-regression.pt \
+        .cache/hub/checkpoints/esm1b_t33_650M_UR50S-contact-regression.pt && \
+    ln -fs /opt/ESMDisPred/largeModels/esm2_t33_650M_UR50D-contact-regression.pt \
+        .cache/hub/checkpoints/esm2_t33_650M_UR50D-contact-regression.pt && \
+    ln -fs /opt/ESMDisPred/largeModels/best.pt models/best.pt
+
+RUN chmod -R 755 . && \
+    # Allow non-root Docker users to create temp files in fldpnn (DisoComb.sh, psiblast,
+    # Java tools all write relative to their CWD which is the fldpnn directory).
+    find tools/Dispredict3.0/tools/fldpnn -type d -exec chmod 777 {} + && \
     ./install_dependencies.sh
 
-# Dry run to validate the pipeline end-to-end at build time
-RUN ./run_ESMDisPred.sh 1
+# Validate all key imports work with the installed environment
+RUN .venv/bin/python -c "\
+import torch, esm, sklearn, joblib, lightgbm; \
+from Bio import SeqIO; \
+import pandas, numpy, scipy; \
+print('Python:', __import__('sys').version); \
+print('PyTorch:', torch.__version__); \
+print('CUDA available:', torch.cuda.is_available()); \
+print('All imports OK')"
 
 ENTRYPOINT ["/bin/bash"]

@@ -60,6 +60,10 @@ docker run -it \
   -v "$(pwd)/features":"$ESMpath/features":rw \
   -v "$(pwd)/largeModels":"$ESMpath/largeModels":rw \
   -v "$(pwd)/run_ESMDisPred.sh":"$ESMpath/run_ESMDisPred.sh" \
+  -v "$(pwd)/scripts/run_Dispredict3.sh":"$ESMpath/scripts/run_Dispredict3.sh" \
+  -v "$(pwd)/scripts/run_ESMDisPred.py":"$ESMpath/scripts/run_ESMDisPred.py" \
+  -v "$(pwd)/scripts/run_ESM2.py":"$ESMpath/scripts/run_ESM2.py" \
+  -v "$(pwd)/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py" \
   -v "$(pwd)/scripts/transformer_Inference.py":"$ESMpath/scripts/transformer_Inference.py" \
   -v "$(pwd)/scripts/preprocess.py":"$ESMpath/scripts/preprocess.py" \
   -v "$(pwd)/models":"$ESMpath/models" \

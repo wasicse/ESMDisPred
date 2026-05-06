@@ -1,3 +1,7 @@
 .git
 .vscode
 .venv
+features/
+largeModels/
+outputs/
+dataset/
