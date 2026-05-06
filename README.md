@@ -1,213 +1,260 @@
-# **ESMDisPred**
+# ESMDisPred
 
 **ESMDisPred**: A Structure-Aware CNN–Transformer Framework for Intrinsically Disordered Protein (IDP) Prediction.
 
 ---
 
-###  Overview
+## Overview
 
-**ESMDisPred** is a deep learning framework that integrates convolutional and Transformer-based architectures to predict intrinsically disordered regions in proteins. By combining sequence embeddings, evolutionary features, and structural information, ESMDisPred achieves high predictive accuracy and generalization across diverse protein families.
-
----
-
-###  Model Variants
-
-- **ESMDisPred-1**  
-  Utilizes sequence-based features from *DisPredict3.0* and *ESM-1* embeddings.
-
-- **ESMDisPred-2**  
-  Extends ESMDisPred-1 by incorporating *ESM-2* embeddings, providing richer contextual protein representations.
-
-- **ESMDisPred-2PDB**  
-  Builds upon ESMDisPred-2 by integrating *structural-related features* derived from **PDB** data, enhancing structural context awareness.
-
-- **ESMDisPred-DNN**  
-  A comprehensive **CNN–Transformer hybrid** model trained using all feature types from *DisPredict3.0*, *ESM-1*, *ESM-2*, and **PDB-derived structural descriptors**.  
-  This variant captures both **local residue patterns (via CNNs)** and **long-range dependencies (via Transformers)**, resulting in superior predictive performance.
-
-
+ESMDisPred integrates convolutional and Transformer-based architectures to predict intrinsically disordered regions in proteins. By combining sequence embeddings, evolutionary features, and structural information, it achieves high predictive accuracy across diverse protein families.
 
 ---
 
-##  Requirements
+## Model Variants
 
-* **OS**: Ubuntu 20.04 (tested)
-* **Python**: via **pyenv** (recommended). Python 3.9–3.10 typically works best with PyTorch.
-* **Hardware**: CPU works; **CUDA GPU** strongly recommended for speed (CUDA 11+).
-* **Disk**: ≥ 20 GB free (models + features cache).
-* **Tools (optional)**: Docker 24+ or Singularity 3.9+.
-
-> **Tip**: If you plan to run ESM models on GPU, ensure `nvidia-driver`, `nvidia-container-toolkit` (for Docker), and a CUDA-enabled PyTorch build are available.
+| Model | Features used |
+|---|---|
+| **ESMDisPred-1** | DisPredict3.0 + ESM-1 embeddings |
+| **ESMDisPred-2** | DisPredict3.0 + ESM-1 + ESM-2 embeddings |
+| **ESMDisPred-2PDB** | DisPredict3.0 + ESM-1 + ESM-2 + PDB structural features |
+| **ESMDisPred-DNN** | CNN–Transformer hybrid trained on all feature types |
 
 ---
 
-##  Install & Data
+## Requirements
+
+| Requirement | Notes |
+|---|---|
+| OS | Linux (Ubuntu 20.04+ tested); macOS works locally |
+| Python | 3.10 (managed automatically by UV) |
+| Disk | ≥ 20 GB free (models + feature cache) |
+| Hardware | CPU works; CUDA GPU strongly recommended for speed |
+| Docker | 24+ (for Docker path) |
+| Singularity | 3.9+ (for HPC path) |
+
+> **GPU note**: for CUDA-accelerated inference, ensure `nvidia-driver` and (for Docker) `nvidia-container-toolkit` are installed, and pass `--gpus all` to `docker run`.
+
+---
+
+## Platform Quickstart
+
+Pick the platform that matches your environment and follow only that section.
+
+- [Local (bare metal)](#1-local-bare-metal)
+- [Docker](#2-docker)
+- [Singularity (HPC)](#3-singularity-hpc)
+
+---
+
+## 1. Local (bare metal)
+
+### Step 1 — Clone and install
 
 ```bash
-# 1) Get the code
 git clone https://github.com/wasicse/ESMDisPred.git
 cd ESMDisPred
 
-# 2) Download pre-trained model bundles (large)
-./run_downloadLargeModels.sh
-```
-
-Dataset examples are under `dataset/`. A demo FASTA is provided at `example/sample.fasta`.
-
----
-
-##  Quickstart (Local OS)
-
->  **Warning**: Running locally without Docker may fail due to missing system libraries (e.g., `libidn.so.11`) or Python package version conflicts (e.g., `scikit-learn`, `lightgbm`). **We strongly recommend using Docker or Singularity** for consistent and reproducible results. See [Run with Docker](#run-with-docker) or [Run with Singularity](#run-with-singularity) sections below.
-
-
-### A) Install Dependencies (one command)
-
-```bash
-# from repo root
+# Installs UV if needed, creates .venv, and installs all Python deps
 ./install_dependencies.sh
 ```
 
-The script will set up Python, packages, and expected folders (including `largeModels/`).
+`install_dependencies.sh` uses [UV](https://docs.astral.sh/uv/) as the package manager. UV is installed automatically if not already present — no manual Python or pip setup required.
 
-### B) Run a Prediction
+### Step 2 — Download pre-trained models
 
 ```bash
-# from repo root
-./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs
+./run_downloadLargeModels.sh
 ```
 
-* Input: path to a **FASTA** file (may contain one or more sequences)
-* Output: results in the `outputs/` directory
+### Step 3 — Run a prediction
+
+```bash
+# Interactive — prompts for model selection
+./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs
+
+# Non-interactive — pass model as third argument
+./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs 1        # ESMDisPred-1
+./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs 4        # ESMDisPred-DNN
+./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs all      # all models
+```
 
 ---
 
-##  Run with Docker
+## 2. Docker
 
-You can **build** the image or **pull** it from the registry.
-
-### Option 1: Build from source
+### Option A — Pull the prebuilt image (fastest)
 
 ```bash
-docker build -t wasicse/esmdispred https://github.com/wasicse/ESMDisPred.git#master
-docker build -t wasicse/esmdispred:version2 -f ./Dockerfile2 .
+docker pull wasicse/esmdispred:latest
 ```
 
-### Option 2: Pull prebuilt image
+### Option B — Build from source
 
 ```bash
-docker pull wasicse/esmdispred:version2
+git clone https://github.com/wasicse/ESMDisPred.git
+cd ESMDisPred
+docker build -t wasicse/esmdispred:latest .
 ```
 
 ### Run
 
-The helper script mounts your input FASTA, `largeModels/`, and `outputs/` into the container:
+The helper script mounts your input FASTA, large models, and output directory into the container:
 
 ```bash
-# Interactive mode - will prompt for model selection
+git clone https://github.com/wasicse/ESMDisPred.git   # if not already cloned
+cd ESMDisPred
+
+# Download large models to the local largeModels/ folder first
+./run_downloadLargeModels.sh
+
+# Interactive mode
 ./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs
 
-# Non-interactive mode - specify model as 3rd parameter
+# Non-interactive mode
 ./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs 3
-./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs ESMDisPred-2PDB
+./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs ESMDisPred-DNN
 ./run_ESMDisPred_Docker.sh "$(pwd)/example/sample.fasta" outputs all
 ```
 
-**Model options (3rd parameter):**
-- `1` or `ESMDisPred-1` - DisPredict3.0 + ESM1
-- `2` or `ESMDisPred-2` - DisPredict3.0 + ESM1 + ESM2
-- `3` or `ESMDisPred-2PDB` - DisPredict3.0 + ESM1 + ESM2 + PDB features 
-- `4` or `ESMDisPred-DNN` - CNN–Transformer hybrid
-- `5` or `all` - Run ALL models
+**Model options (3rd argument):**
 
-If the 3rd parameter is omitted, the script will prompt you interactively to select a model.
+| Value | Description |
+|---|---|
+| `1` / `ESMDisPred-1` | DisPredict3.0 + ESM1 |
+| `2` / `ESMDisPred-2` | DisPredict3.0 + ESM1 + ESM2 |
+| `3` / `ESMDisPred-2PDB` | DisPredict3.0 + ESM1 + ESM2 + PDB |
+| `4` / `ESMDisPred-DNN` | CNN–Transformer hybrid |
+| `5` / `all` | Run all models |
 
 ---
 
-##  Run with Singularity
+## 3. Singularity (HPC)
 
-### Build from definition
+Singularity is common on HPC clusters where Docker is unavailable. No root required to run.
+
+### Option A — Build from the definition file
 
 ```bash
+git clone https://github.com/wasicse/ESMDisPred.git
+cd ESMDisPred
+
+# Requires root (or --fakeroot on supported clusters)
 sudo singularity build ESMDispS.sif ESMDispS.def
-
-sudo singularity run --writable-tmpfs \
-  -B "$(pwd)/example/sample.fasta:/opt/ESMDisPred/example/sample.fasta" \
-  -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
-  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs:rw" \
-  ESMDispS.sif
-
-cd /opt/ESMDisPred && ./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs
 ```
 
-### Build from Docker image
+### Option B — Convert the Docker image (no root needed)
 
 ```bash
 singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
+```
 
-sudo singularity run --writable-tmpfs \
+### Run
+
+The container's pipeline is at `/opt/ESMDisPred/run_ESMDisPred.sh`. Bind your data directories and pass arguments directly:
+
+```bash
+# Download large models locally first
+./run_downloadLargeModels.sh
+
+mkdir -p outputs
+
+singularity exec --writable-tmpfs \
   -B "$(pwd)/example/sample.fasta:/opt/ESMDisPred/example/sample.fasta" \
   -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
-  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs:rw" \
-  esmdispred.sif
+  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs" \
+  ESMDispS.sif \
+  /opt/ESMDisPred/run_ESMDisPred.sh \
+    /opt/ESMDisPred/example/sample.fasta \
+    /opt/ESMDisPred/outputs \
+    3
+```
 
-cd /opt/ESMDisPred && ./run_ESMDisPred.sh "$(pwd)/example/sample.fasta" outputs
+> **Paths inside the container** must use the container-side mount point (`/opt/ESMDisPred/...`), not the host path.
+
+**Using your own FASTA file:**
+
+```bash
+mkdir -p outputs
+
+singularity exec --writable-tmpfs \
+  -B "/path/to/your/proteins.fasta:/opt/ESMDisPred/input/proteins.fasta" \
+  -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
+  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs" \
+  ESMDispS.sif \
+  /opt/ESMDisPred/run_ESMDisPred.sh \
+    /opt/ESMDisPred/input/proteins.fasta \
+    /opt/ESMDisPred/outputs \
+    all
+```
+
+**Interactive shell inside the container:**
+
+```bash
+singularity shell --writable-tmpfs \
+  -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
+  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs" \
+  ESMDispS.sif
+
+# inside the container:
+cd /opt/ESMDisPred
+./run_ESMDisPred.sh example/sample.fasta outputs 4
 ```
 
 ---
 
-##  Output
+## Output
 
-Inside `outputs/` you’ll find:
+Results are written to your output directory:
 
-* **`PROTEINID.caid`** — per-residue disorder probabilities (one file per sequence), tab- or space-delimited.
-* **`timings.csv`** — wall-clock timings per stage/model.
-* Subfolders by model variant (e.g., `ESMDisPred-1/`, `ESMDisPred-2/`, …) when applicable.
+| File | Description |
+|---|---|
+| `<PROTEINID>.caid` | Per-residue disorder probabilities |
+| `esmdispred.log` | Full run log with timings |
 
-**File format (`*.caid`)**
+**`.caid` format** (tab-separated):
 
 ```
-# Example (columns may include: residue_index, residue, probability)
-1   M   0.034
-2   A   0.071
+1    M    0.034
+2    A    0.071
+3    K    0.183
 ...
 ```
 
+Columns: residue index, amino acid, disorder probability (0 = ordered, 1 = disordered).
+
 ---
 
+## Citation
 
-##  Citation
+If you use ESMDisPred, please cite:
 
-If you use **ESMDisPred**, please cite:
+1. Md Wasi Ul Kabir, Ayon Dey, Farzeen Nafees, and Md Tamjidul Hoque. "ESMDisPred: A Structure-Aware CNN-Transformer Architecture for Intrinsically Disordered Protein Prediction." *bioRxiv* (2026). https://doi.org/10.64898/2026.01.22.701204
 
-1. Md Wasi Ul Kabir, Ayon Dey, Farzeen Nafees, and Md Tamjidul Hoque. "ESMDisPred: A Structure-Aware CNN-Transformer Architecture for Intrinsically Disordered Protein Prediction." *bioRxiv* (2026). [https://doi.org/10.64898/2026.01.22.701204](https://doi.org/10.64898/2026.01.22.701204).
-
-2. Md Wasi Ul Kabir, and Md Tamjidul Hoque. "DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model." *Applied Mathematics and Computation* 472 (July 2024): 128630. [https://doi.org/10.1016/j.amc.2024.128630](https://doi.org/10.1016/j.amc.2024.128630).
-
+2. Md Wasi Ul Kabir, and Md Tamjidul Hoque. "DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model." *Applied Mathematics and Computation* 472 (July 2024): 128630. https://doi.org/10.1016/j.amc.2024.128630
 
 <details>
-<summary><b>BibTeX</b></summary>
+<summary>BibTeX</summary>
 
 ```bibtex
 @article{Kabir2026ESMDisPred,
-  author = {Kabir, Md Wasi Ul and Dey, Ayon and Nafees, Farzeen and Hoque, Md Tamjidul},
-  title = {ESMDisPred: A Structure-Aware CNN-Transformer Architecture for Intrinsically Disordered Protein Prediction},
-  year = {2026},
-  doi = {10.64898/2026.01.22.701204},
-  publisher = {Cold Spring Harbor Laboratory},
-  journal = {bioRxiv}
+  author    = {Kabir, Md Wasi Ul and Dey, Ayon and Nafees, Farzeen and Hoque, Md Tamjidul},
+  title     = {ESMDisPred: A Structure-Aware CNN-Transformer Architecture for Intrinsically Disordered Protein Prediction},
+  year      = {2026},
+  doi       = {10.64898/2026.01.22.701204},
+  journal   = {bioRxiv}
 }
 
 @article{Kabir2024DisPredict3,
-  title = {DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model},
-  author = {Kabir, Md Wasi Ul and Hoque, Md Tamjidul},
-  journal = {Applied Mathematics and Computation},
-  volume = {472},
-  pages = {128630},
-  year = {2024},
-  doi = {10.1016/j.amc.2024.128630}
+  author    = {Kabir, Md Wasi Ul and Hoque, Md Tamjidul},
+  title     = {DisPredict3.0: Prediction of Intrinsically Disordered Regions/Proteins Using Protein Language Model},
+  journal   = {Applied Mathematics and Computation},
+  volume    = {472},
+  pages     = {128630},
+  year      = {2024},
+  doi       = {10.1016/j.amc.2024.128630}
 }
 ```
+
 </details>
 
 ---
@@ -215,7 +262,4 @@ If you use **ESMDisPred**, please cite:
 ## Authors & Contact
 
 **Md Wasi Ul Kabir**, **Md Tamjidul Hoque**  
-Questions/Issues: **Md Tamjidul Hoque** — [thoque@uno.edu](mailto:thoque@uno.edu)
-
----
-
+Questions / Issues: Md Tamjidul Hoque — [thoque@uno.edu](mailto:thoque@uno.edu)

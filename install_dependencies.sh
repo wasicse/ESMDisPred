@@ -1,118 +1,77 @@
 #! /bin/bash
-# reset the terminal
-source ~/.bashrc
-echo "Installing Dependencies"
-# pythonversion="miniconda3-3.9-4.10.3"
-pythonversion="miniconda3-4.7.12"
-poetryversion="1.1.13"
-echo "Check if python version is correct or not. Current python version is: $pythonversion"
-echo "Check if poetry version is correct or not. Current poetry version is: $poetryversion"
-
-if command -v pyenv > /dev/null 2>&1; then
-    echo "pyenv exists"
-else
-    echo "pyenv does not exist. Installing pyenv."
-    curl https://pyenv.run | bash
-
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-
-    $SHELL
-fi
-
-source ~/.bashrc
-
-# check if local dependencies for ESMDispred already exist
-if [ ! -d ".venv" ]; then
-    echo "Installing ESMDispred dependencies"
-
-    export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
-    echo "Installing python version: $pythonversion"
-    pyenv install -s $pythonversion
-    pyenv local $pythonversion
-
-    # Create local poetry environment
-    echo "Creating local environment"
-    rm -rf .venv
-    rm -rf poetry.lock
-    python3 -m venv .venv
-    echo "Installing pip and setuptools"
-    ./.venv/bin/pip install -U pip setuptools
-    ./.venv/bin/pip install poetry==$poetryversion
-    POETRY_VIRTUALENVS_IN_PROJECT="true"
-
-    # Install Poetry Dependencies
-    ./.venv/bin/poetry
-
-    # Test Installation
-    ./.venv/bin/poetry run python --version
-    echo "Installing dependencies in poetry"
-    ./.venv/bin/poetry install --no-root
-else
-    echo "ESMDispred dependencies already installed"
-fi
-
-# keep this as-is:
-ln -fs "$(pwd)/.venv" "$(pwd)/tools/Dispredict3.0/.venv"
-
-################################################################################
-# ADDITIONAL ENVIRONMENT: create a separate conda env (Python 3.9) alongside .venv
-################################################################################
+# Works in local, Docker (root or --user), and Singularity environments.
+# Safe to call from any working directory.
+source ~/.bashrc 2>/dev/null || true
 
 set -euo pipefail
 
-PYENV_MINICONDA="${pythonversion}"         # miniconda3-4.7.12
-CONDA_ENV_NAME="py39"
-PROJECT_ROOT="$(pwd)"
+echo "Installing ESMDisPred Dependencies"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DISPRED_TOOL_DIR="$PROJECT_ROOT/tools/Dispredict3.0"
-# Full path to the conda env directory
-CONDA_ENV_PATH="$HOME/.pyenv/versions/${PYENV_MINICONDA}/envs/${CONDA_ENV_NAME}"
+cd "$PROJECT_ROOT"
 
-echo "----- Setting up additional conda environment: ${CONDA_ENV_NAME} (Python 3.9) -----"
-
-# Ensure pyenv miniconda exists
-if ! pyenv versions --bare | grep -qx "${PYENV_MINICONDA}"; then
-  echo "Installing ${PYENV_MINICONDA} via pyenv..."
-  pyenv install "${PYENV_MINICONDA}"
+# ============================================================
+# 1. Install UV if not present
+#    Write to /usr/local/bin when writable (containers built as
+#    root) so that non-root --user Docker runs can still find it.
+#    Fall back to the user-local install otherwise.
+# ============================================================
+if ! command -v uv > /dev/null 2>&1; then
+    echo "UV not found. Installing UV..."
+    if [ -w /usr/local/bin ]; then
+        curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
+    else
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    fi
 fi
 
-# Ensure conda is on PATH for this shell
-eval "$(pyenv init -)"
-pyenv shell "${PYENV_MINICONDA}"
+echo "UV version: $(uv --version)"
 
-CONDA_BIN="$HOME/.pyenv/versions/${PYENV_MINICONDA}/bin/conda"
-# Initialize conda shell hook
-eval "$($HOME/.pyenv/versions/${PYENV_MINICONDA}/bin/conda shell.bash hook)"
-
-# Create env if missing
-if ! "$CONDA_BIN" env list | awk '{print $1}' | grep -qx "${CONDA_ENV_NAME}"; then
-  echo "Creating conda env '${CONDA_ENV_NAME}'..."
-  "$CONDA_BIN" create -y -n "${CONDA_ENV_NAME}" python=3.9
-else
-  echo "Conda env '${CONDA_ENV_NAME}' already exists."
+# ============================================================
+# 2. System dependency: libidn.so.11
+#    The bundled psiblast binary requires libidn.so.11 but
+#    modern distros only ship libidn.so.12. Create a symlink
+#    if missing.
+# ============================================================
+if ! ldconfig -p 2>/dev/null | grep -q "libidn\.so\.11"; then
+    libpath=$(find /usr/lib /lib -name "libidn.so.12*" 2>/dev/null | grep -v '\.12\.' | head -1)
+    if [ -z "$libpath" ]; then
+        libpath=$(find /usr/lib /lib -name "libidn.so.12*" 2>/dev/null | head -1)
+    fi
+    if [ -n "$libpath" ]; then
+        target="$(dirname "$libpath")/libidn.so.11"
+        echo "Creating libidn.so.11 symlink: $libpath → $target"
+        if [ -w "$(dirname "$libpath")" ]; then
+            ln -fs "$libpath" "$target"
+        else
+            sudo ln -fs "$libpath" "$target"
+        fi
+        ldconfig 2>/dev/null || sudo ldconfig 2>/dev/null || true
+    else
+        echo "WARNING: libidn.so.12 not found — psiblast (DisPredict3.0) may fail."
+        echo "         Install it with: sudo apt-get install libidn12 libidn11"
+    fi
 fi
 
-# (Optional) install requirements into the conda env, but do not touch your .venv
-conda activate "${CONDA_ENV_NAME}"
-if [[ -f "requirements.txt" ]]; then
-  echo "Installing requirements.txt into conda env '${CONDA_ENV_NAME}'..."
-  pip install --upgrade pip setuptools wheel
-  pip install -r requirements.txt
-else
-  echo "No requirements.txt found; skipping conda-env pip install."
-fi
-conda deactivate
-
-# Create helpful symlinks to the conda env (without disturbing your existing .venv)
-# Local link so scripts can explicitly use the conda env if desired:
-ln -sfn "${CONDA_ENV_PATH}" "${PROJECT_ROOT}/.venv_py39"
-
-# Also link under tools for Dispredict3.0
-if [[ -d "${DISPRED_TOOL_DIR}" ]]; then
-  ln -sfn "${CONDA_ENV_PATH}" "${DISPRED_TOOL_DIR}/.venv_py39"
+# ============================================================
+# 3. Create a single virtual environment for all scripts:
+#      run_ESM2.py              (fair-esm, torch)
+#      run_ESMDisPred.py        (lightgbm, scikit-learn)
+#      transformer_Inference.py (torch >= 2.3.1, joblib)
+#      Disnet.py                (tensorflow, keras)
+# ============================================================
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment (.venv)..."
+    uv venv .venv --python 3.10
 fi
 
-echo "----- Additional conda environment ready -----"
-echo "Activate via:   conda activate ${CONDA_ENV_NAME}"
-echo "Or use:         $(pwd)/.venv_py39/bin/python"
+echo "Installing/updating dependencies from pyproject.toml..."
+uv sync --no-install-project
+
+# Symlink so tools/Dispredict3.0 shares the same env
+ln -fs "$PROJECT_ROOT/.venv" "$DISPRED_TOOL_DIR/.venv"
+
+echo ""
+echo "All dependencies installed."
+echo "  Python: $PROJECT_ROOT/.venv/bin/python"

@@ -99,10 +99,23 @@ def dispredict(fasta_filepath,output_path):
         print("Loading ESM-1b model...")
         # model, alphabet = torch.hub.load("facebookresearch/esm:main", "esm1b_t33_650M_UR50S")
 
-        # Load ESM-1b model
-        
+        # Load ESM-1b model — prefer GPU but fall back to CPU on low memory or OOM
+        ESM1B_MIN_FREE_GB = 2.0
+        if torch.cuda.is_available():
+            free_gb = torch.cuda.mem_get_info()[0] / (1024 ** 3)
+            device = torch.device("cuda" if free_gb >= ESM1B_MIN_FREE_GB else "cpu")
+        else:
+            device = torch.device("cpu")
+        print("Using device:", device)
         model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
+        try:
+            model = model.to(device)
+        except torch.cuda.OutOfMemoryError:
+            print("WARNING: GPU OOM — retrying on CPU")
+            device = torch.device("cpu")
+            model = model.to(device)
         batch_converter = alphabet.get_batch_converter()
+        model.eval()
 
         # %%
         
@@ -136,16 +149,17 @@ def dispredict(fasta_filepath,output_path):
 
                         data = [ (pid, chunk)]
                         batch_labels, batch_strs, batch_tokens = batch_converter(data)
+                        batch_tokens = batch_tokens.to(device)
                         flagl=0
                         # print("Layer", layern)
                         layern=list(range(34)) 
                         with torch.no_grad():
                             results = model(batch_tokens, repr_layers=layern, return_contacts=True)
-                        # Extract per-residue representations (on CPU)
+                        # Extract per-residue representations on the selected device.
                         for layern in range(34): #
                                                                             
                             token_representations = results["representations"][layern]
-                            toekn=token_representations[0, 1 : len(chunk) + 1].numpy()
+                            toekn=token_representations[0, 1 : len(chunk) + 1].cpu().numpy()
                             toekn=np.hstack((toekn,np.mean(toekn, axis=1).reshape(-1,1)))
                             if(flagl==0):
                                 np_featurel=toekn
@@ -165,17 +179,18 @@ def dispredict(fasta_filepath,output_path):
 
                 data = [ (pid, fasta)]
                 batch_labels, batch_strs, batch_tokens = batch_converter(data)
+                batch_tokens = batch_tokens.to(device)
                 flagl=0
                 layern=list(range(34))    
                 # print("Layer", layern)
-                # Extract per-residue representations (on CPU)
+                # Extract per-residue representations on the selected device.
                 with torch.no_grad():
                     results = model(batch_tokens, repr_layers=layern, return_contacts=True)
                             
                 for layern in range(34): #               
                     
                     token_representations = results["representations"][layern]
-                    toekn=token_representations[0, 1 : len(fasta) + 1].numpy()
+                    toekn=token_representations[0, 1 : len(fasta) + 1].cpu().numpy()
                     toekn=np.hstack((toekn,np.mean(toekn, axis=1).reshape(-1,1)))
 
                     if(flagl==0):
@@ -205,7 +220,7 @@ def dispredict(fasta_filepath,output_path):
             # print(np_allfeat.shape)
             proba = saved_model.predict_proba(np_allfeat)
 
-            pred = (proba[:,1] >= threshold).astype(np.int)
+            pred = (proba[:,1] >= threshold).astype(int)
 
             result=np.hstack((np_index,np.round(proba[:,1], 3).reshape(-1,1) ,pred.reshape(-1,1))) 
 
@@ -268,4 +283,3 @@ if __name__ == '__main__':
     
     dispredict(options.fasta_filepath,options.output_path)
     
-

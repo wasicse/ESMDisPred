@@ -1,27 +1,31 @@
-FROM debian:buster-slim
-RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2
+FROM python:3.9-slim
 
-RUN apt-get update && \
-apt-get install -y --no-install-recommends make build-essential libssl-dev  wget curl llvm libidn11 openjdk-11-jre git nano tcsh sudo 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        make build-essential libssl-dev wget curl git nano openjdk-11-jre \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR "/opt"
+# Install UV system-wide
+RUN curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
 
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
-ENV PYENV_ROOT="/opt/.pyenv" 
-ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
+WORKDIR /opt
 
-ENV PYTHON_VERSION=miniconda3-4.7.12
-RUN pyenv install ${PYTHON_VERSION} && \
-      pyenv global ${PYTHON_VERSION} && \      
-      curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 - && \
-      git clone https://github.com/wasicse/Dispredict3.0.git
+RUN git clone https://github.com/wasicse/Dispredict3.0.git && \
+    chmod -R 755 /opt/Dispredict3.0
 
-WORKDIR "/opt/Dispredict3.0"
-ENV PATH="/opt/poetry/bin:${PATH}"
+WORKDIR /opt/Dispredict3.0
 
-ENV POETRY_VIRTUALENVS_IN_PROJECT="true"
-RUN poetry install && \
-      chmod -R 777 ../
-ENTRYPOINT [ "/bin/bash" ]
+# Install deps directly — the upstream repo uses Poetry format so uv sync
+# cannot read it; we enumerate the packages explicitly instead.
+RUN uv venv .venv --python python3.9 && \
+    uv pip install --python .venv/bin/python \
+        "scikit-learn>=0.23.1" \
+        "keras>=2.4.3" \
+        "tensorflow>=2.4.1" \
+        "pandas>=1.2.2" \
+        "fair-esm>=0.4.0" \
+        "lightgbm>=3.3.2" \
+        "biopython>=1.79" \
+        "gdown>=4.4.0" \
+        "torch>=1.13.1"
 
-
+ENTRYPOINT ["/bin/bash"]

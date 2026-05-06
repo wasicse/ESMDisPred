@@ -41,7 +41,9 @@ np.random.seed(seed_value)
     #     gdown.download(url=url, output=output, quiet=False, fuzzy=True)
 
 def ESMDisPred(fasta_filepath,output_path,feature_path,model):
-          
+    output_dir = Path(output_path)
+    model_output_dir = output_dir / "disorder" / model
+    model_output_dir.mkdir(parents=True, exist_ok=True)
   
     
     # Threshold is not optimized, it is just a default value
@@ -74,7 +76,7 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
         np_proba=np.array(np_proba).reshape(-1,1)
         result=np.hstack((np_index,protein_sequence, np_proba))  #,pred.reshape(-1,1)
              
-        with open(output_path+"disorder/"+model+"/"+pid+".caid", "w") as f:
+        with open(model_output_dir / f"{pid}.caid", "w") as f:
             f.write((">"+pid+"\n"))
             fmt = '%s','%s', '%s' #, '%s'
             np.savetxt(f, result, delimiter='\t',fmt=fmt)           
@@ -87,7 +89,7 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
     df_time['sequence'] = seq
     df_time['milliseconds'] = time_milli
 
-    filecsv=open(output_path+"timings_"+model+".csv", "w")
+    filecsv=open(output_dir / f"timings_{model}.csv", "w")
     
     timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
     
@@ -130,4 +132,3 @@ if __name__ == '__main__':
     
     ESMDisPred(options.fasta_filepath,options.output_path,options.features_path,options.model)
     
-

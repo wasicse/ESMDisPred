@@ -1,45 +1,40 @@
 #! /bin/bash
-# Run the script 
-source ~/.bashrc
+# Works in local, Docker, and Singularity environments.
+# Safe to call from any working directory.
+source ~/.bashrc 2>/dev/null || true
 
-echo "Installing Dependencies"
-pythonversion="miniconda3-4.7.12"
-poetryversion="1.1.13"
-echo "Check if python version is correct or not. Installing python version is: $pythonversion"
-echo "Check if poetry version is correct or not. Installing poetry version is: $poetryversion"
+set -euo pipefail
 
-if command -v pyenv > /dev/null 2>&1; then
-    echo "pyenv exists"
-else
-    echo "pyenv does not exist. Installing pyenv."
-	curl https://pyenv.run | bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
-	echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-	echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-	echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+echo "Installing Dispredict3.0 Dependencies"
 
-	$SHELL
+# ============================================================
+# 1. Install UV if not present
+# ============================================================
+if ! command -v uv > /dev/null 2>&1; then
+    echo "UV not found. Installing UV..."
+    if [ -w /usr/local/bin ]; then
+        curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
+    else
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    fi
 fi
 
-export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
-echo "Installing python version: $pythonversion"
-pyenv install $pythonversion
-pyenv local $pythonversion
+echo "UV version: $(uv --version)"
 
-# Create local poetry environment
-echo "Creating local environment"
+# ============================================================
+# 2. Create virtual environment and install dependencies
+# ============================================================
+echo "Creating virtual environment (.venv)..."
 rm -rf .venv
-rm -rf poetry.lock
-python3 -m venv .venv
-echo "Installing pip and setuptools"
-./.venv/bin/pip install -U pip setuptools
-./.venv/bin/pip install poetry==$poetryversion
-POETRY_VIRTUALENVS_IN_PROJECT="true"
+uv venv .venv --python 3.9
 
-# Install Poetry Dependencies
-./.venv/bin/poetry
+echo "Installing dependencies from pyproject.toml..."
+uv sync --no-install-project
 
-#Test Installation.venv/bin/poetry run which python
-./.venv/bin/poetry run python --version
-echo "Installing dependencies in poetry"
-./.venv/bin/poetry install --no-root
+echo ""
+echo "Dispredict3.0 dependencies installed."
+echo "  Python: $SCRIPT_DIR/.venv/bin/python"

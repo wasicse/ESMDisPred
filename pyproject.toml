@@ -1,25 +1,35 @@
-[tool.poetry]
-name = "dispredict3.0"
+[project]
+name = "esmdispred"
 version = "0.1.0"
-description = "Dispredict3.0: Prediction of Intrinsically Disordered Proteins with Protein Language Model"
-authors = ["Md Wasi Ul Kabir <mkabir3@uno.edu>"]
-license = "MIT"
-
-[tool.poetry.dependencies]
-python = ">=3.7.1"
-scikit-learn = "0.23.1"
-keras = "2.4.3"
-tensorflow = "2.4.1"
-pandas = "1.2.2"
-fair-esm = "^2.0.0"
-lightgbm = "^4.3.0"
-biopython = "^1.79"
-gdown = "^4.4.0"
-torch = "1.13.1"
-
-
-[tool.poetry.dev-dependencies]
+description = "ESMDisPred: Structure-Aware CNN-Transformer Framework for Intrinsically Disordered Protein Prediction"
+authors = [{name = "Md Wasi Ul Kabir", email = "mkabir3@uno.edu"}]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.2.2",
+    "numpy>=1.26.4",
+    "scikit-learn>=1.5.2",
+    "scipy>=1.13.1",
+    "biopython>=1.83",
+    "joblib>=1.4.2",
+    "torch==2.10.0",
+    "fair-esm>=2.0.0",
+    "lightgbm>=4.3.0",
+    "gdown>=4.4.0",
+    "tensorflow>=2.13.0",
+    "keras>=3.0.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu126", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true

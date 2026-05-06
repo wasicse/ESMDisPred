@@ -36,9 +36,24 @@ def extractFeatures(fasta_filepath,output_path):
     
     
     print("\n","#"*40,"Extracting features from ESM-2...","#"*40, "\n")
+    # Prefer GPU but fall back to CPU on low memory or OOM
+    ESM2_MIN_FREE_GB = 2.0
+    if torch.cuda.is_available():
+        free_gb = torch.cuda.mem_get_info()[0] / (1024 ** 3)
+        device = torch.device("cuda" if free_gb >= ESM2_MIN_FREE_GB else "cpu")
+    else:
+        device = torch.device("cpu")
+    print("Using device:", device)
+
     # Load ESM-2 model
     # model, alphabet = esm.pretrained.esm2_t36_3B_UR50D()
     model, alphabet = esm.pretrained.esm2_t33_650M_UR50D()
+    try:
+        model = model.to(device)
+    except torch.cuda.OutOfMemoryError:
+        print("WARNING: GPU OOM — retrying on CPU")
+        device = torch.device("cpu")
+        model = model.to(device)
     batch_converter = alphabet.get_batch_converter()
     model.eval()  # disables dropout for deterministic results
 
@@ -65,16 +80,18 @@ def extractFeatures(fasta_filepath,output_path):
 
             # Convert data to PyTorch tensors
             batch_labels, batch_strs, batch_tokens = batch_converter(data)
+            batch_tokens = batch_tokens.to(device)
             batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
             
-            # Extract per-residue representations (on CPU)
+            # Extract per-residue representations on the selected device.
             with torch.no_grad():
                 results = model(batch_tokens, repr_layers=[layern], return_contacts=True)
             token_representations = results["representations"][layern]
 
             # Generate per-sequence representations via averaging
             # NOTE: token 0 is always a beginning-of-sequence token, so the first residue is token 1.        
-            sequence_representation = token_representations[0, 1 : batch_lens - 1].numpy() 
+            seq_len = int(batch_lens[0].item()) - 1
+            sequence_representation = token_representations[0, 1:seq_len].cpu().numpy()
             print("Sequence representation shape:", sequence_representation.shape)
 
             np.savetxt(output_path+record.id+".csv", sequence_representation, delimiter=",")    
@@ -102,7 +119,6 @@ if __name__ == "__main__":
 
     extractFeatures(fasta_filepath,output_path)
     
-
 
 
 

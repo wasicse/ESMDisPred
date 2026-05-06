@@ -1,40 +1,40 @@
-Bootstrap:library
-From: debian:10
-
-%environment
-
-#Setting the environment variables needed
+Bootstrap: docker
+From: python:3.10-slim
 
 %help
+    Singularity container for ESMDisPred — Structure-Aware CNN-Transformer
+    Framework for Intrinsically Disordered Protein Prediction.
 
-Singularity container with ESMDisPred framework.
+    Run:
+        singularity exec esmdispred.sif /opt/ESMDisPred/run_ESMDisPred.sh \
+            input.fasta output_dir [model_option]
+
+%environment
+    export ESMpath=/opt/ESMDisPred
+    export TORCH_HOME=/opt/ESMDisPred/largeModels
+    export PATH=/opt/ESMDisPred/.venv/bin:/usr/local/bin:$PATH
 
 %post
+    apt-get update && apt-get install -y --no-install-recommends \
+        make build-essential libssl-dev wget curl git nano tcsh \
+        openjdk-11-jre libidn11 libidn12 llvm \
+    && rm -rf /var/lib/apt/lists/*
 
-#Installing all dependencies
+    # Ensure libidn.so.11 exists — bundled psiblast requires it
+    libpath=$(find /usr/lib /lib -name "libidn.so.12" 2>/dev/null | head -1)
+    [ -n "$libpath" ] && ln -fs "$libpath" "$(dirname "$libpath")/libidn.so.11" && ldconfig || true
 
-# Install 
-apt-get update 
-apt-get install -y --no-install-recommends make build-essential libssl-dev  wget curl llvm libidn11 openjdk-11-jre git nano tcsh  
+    # Install UV system-wide
+    curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
 
-# ------------------- install ESM2Dispred -------------------
-cd /opt
-echo "Downloading ESMDisPred"
-git clone https://github.com/wasicse/ESMDisPred.git
+    # Clone and install ESMDisPred
+    cd /opt
+    git clone https://github.com/wasicse/ESMDisPred.git
+    chmod -R 755 /opt/ESMDisPred
 
-echo "Installing Pyenv"
-export PYENV_ROOT=/opt/pyenv
-export PATH="/opt/pyenv/bin:$PATH"
-curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-
-PYTHON_VERSION=miniconda3-4.7.12
-pyenv install ${PYTHON_VERSION} 
-echo 'export PATH=/opt/pyenv/versions/miniconda3-4.7.12/bin/:$PATH' >> $SINGULARITY_ENVIRONMENT
-export PATH=/opt/pyenv/versions/miniconda3-4.7.12/bin/:$PATH
-
-cd /opt/ESMDisPred
-./install_dependencies.sh
+    cd /opt/ESMDisPred
+    ./install_dependencies.sh
 
 %runscript
-/bin/bash
-cd /opt/ESMDisPred
+    cd /opt/ESMDisPred
+    exec /bin/bash "$@"

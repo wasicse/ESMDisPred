@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import sys
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 import tensorflow as tf
 import keras
 from keras import backend as K
@@ -20,8 +21,8 @@ def readfea(filename):
 	return features
 
 feas=readfea(sys.argv[1])
-model=load_model(modelname)
+model=load_model(modelname, compile=False)
 preds = model.predict(feas,verbose=0)
 bins = [item>=thres for item in preds]
 for p,b in zip(preds,bins):
-	print("%1.3f\t%d" % (p,b))
+	print("%1.3f\t%d" % (float(np.ravel(p)[0]), int(np.ravel(b)[0])))

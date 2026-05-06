@@ -41,8 +41,8 @@ def preProcess_features(features_path,pid,method):
 
         df_Dispred=pd.read_csv(features_path+"/Dispredict3.0/features/"+pid+'_features.csv',header=None)          
         df_Dispred.columns=ColumnName_Dispredict3
-    else:          
-        print(pid, file=open("missing_features_Dispred.txt", "a"))
+    else:
+        print(f"WARNING: missing DisPredict3.0 features for {pid}")
       
     
     window_size=7

@@ -6,45 +6,49 @@
 # Intrinsically Disordered Protein (IDP) Prediction
 # ================================================================
 
-set -e  # exit on error
+set -eo pipefail  # exit on error, including failures before tee in pipelines
 
-# ------------------------------------------------
-# 0. Environment setup
-# ------------------------------------------------
-export TORCH_HOME=$(pwd)/largeModels
+# ----------------------------------------------------------------
+# 0. Anchor all paths to this script's own directory.
+#    This lets the script be called from any working directory —
+#    local, Docker (WORKDIR), or Singularity exec.
+# ----------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CALLER_DIR="$(pwd)"   # captured before any cd, used to resolve relative user paths
+export TORCH_HOME="$SCRIPT_DIR/largeModels"
+export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:${LD_LIBRARY_PATH:-}"
+
 dryRun=$1
 
 echo "================================================="
 echo " ESMDisPred - Intrinsically Disordered Protein Prediction"
 echo "================================================="
 
+cd "$SCRIPT_DIR"
+
 echo "→ Downloading large models..."
 ./run_downloadLargeModels.sh
 
 
 # ================================================================
-# 1. Dry run setup (used during Docker image build)
+# 1. Dry run (used during Docker / Singularity image build)
 # ================================================================
 if [ "$dryRun" == "1" ]; then
-    echo "[Dry Run Mode] Setting up environment for Docker build..."
+    echo "[Dry Run Mode] Validating environment..."
     models=("ESMDisPred-DNN")
     rm -rf features outputs
 
     n=1
-    localpythonPath="../.venv/bin/python"
-    _docker_py="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
-    _local_py="$(pwd)/.venv_py39/bin/python"
-    if [ -f "$_docker_py" ]; then
-        localpythonPath2="$_docker_py"
-    elif [ -f "$_local_py" ]; then
-        localpythonPath2="$_local_py"
-    else
-        echo "ERROR: conda py39 environment not found. Run ./install_dependencies.sh first."
+    localpythonPath="$SCRIPT_DIR/.venv/bin/python"
+    localpythonPath2="$SCRIPT_DIR/.venv/bin/python"
+    if [ ! -f "$localpythonPath" ]; then
+        echo "ERROR: .venv not found. Run ./install_dependencies.sh first."
         exit 1
     fi
-    input_fasta="$(pwd)/example/sample.fasta"
-    features_dir="features"
-    output_dir_path="outputs/"
+    "$localpythonPath" -c 'import torch; print("PyTorch device:", "cuda" if torch.cuda.is_available() else "cpu")'
+    input_fasta="$SCRIPT_DIR/example/sample.fasta"
+    features_dir="$SCRIPT_DIR/features"
+    output_dir_path="$SCRIPT_DIR/outputs"
 
 # ================================================================
 # 2. Normal execution mode
@@ -64,31 +68,30 @@ else
         exit 1
     fi
 
-    input_fasta=$1
-    output_dir_path=$2/
-    model_choice=${3:-}  # Optional third parameter
-    localpythonPath="../.venv/bin/python"
-    _docker_py="/opt/.pyenv/versions/miniconda3-4.7.12/envs/py39/bin/python"
-    _local_py="$(pwd)/.venv_py39/bin/python"
-    if [ -f "$_docker_py" ]; then
-        localpythonPath2="$_docker_py"
-    elif [ -f "$_local_py" ]; then
-        localpythonPath2="$_local_py"
-    else
-        echo "ERROR: conda py39 environment not found. Run ./install_dependencies.sh first."
+    # Resolve user-supplied paths to absolute using the caller's original directory
+    input_fasta="$1"
+    [[ "$input_fasta" == /* ]] || input_fasta="$CALLER_DIR/$input_fasta"
+    output_dir_path="$2"
+    [[ "$output_dir_path" == /* ]] || output_dir_path="$CALLER_DIR/$output_dir_path"
+
+    model_choice=${3:-}
+
+    localpythonPath="$SCRIPT_DIR/.venv/bin/python"
+    localpythonPath2="$SCRIPT_DIR/.venv/bin/python"
+    if [ ! -f "$localpythonPath" ]; then
+        echo "ERROR: .venv not found. Run ./install_dependencies.sh first."
         exit 1
     fi
+    "$localpythonPath" -c 'import torch; print("PyTorch device:", "cuda" if torch.cuda.is_available() else "cpu")'
 
     echo "Running ESMDisPred pipeline"
     echo "Input FASTA: $input_fasta"
     echo "Output Dir : $output_dir_path"
 
-    # If model choice provided as parameter, use it
     if [ -n "$model_choice" ]; then
         choice="$model_choice"
         echo "Using model option from parameter: $choice"
     else
-        # Interactive mode
         echo "Select model variant:"
         echo "1) ESMDisPred-1  (DisPredict3.0 + ESM1)"
         echo "2) ESMDisPred-2  (DisPredict3.0 + ESM1 + ESM2)"
@@ -99,7 +102,6 @@ else
         read -p "Enter choice [1-6]: " choice
     fi
 
-    # Process the choice
     case $choice in
         1|ESMDisPred-1)
             echo "→ Running with DisPredict3.0 + ESM1 features"
@@ -133,7 +135,7 @@ else
     esac
 
     n=1
-    features_dir="features"
+    features_dir="$SCRIPT_DIR/features"
 fi
 
 
@@ -142,20 +144,17 @@ fi
 # ================================================================
 echo "→ Preparing directories..."
 mkdir -p "$features_dir" "$output_dir_path" "$features_dir/Dispredict3.0" 2>/dev/null || true
-# chmod -R 777 "$features_dir" 2>/dev/null || true
-# chmod -R 777 "$output_dir_path" 2>/dev/null || true
 
 
 # ================================================================
-# 4. Setup logging (single file, append mode)
+# 4. Logging
 # ================================================================
-LOG_FILE="$(realpath "$output_dir_path")/esmdispred.log"
+LOG_FILE="$output_dir_path/esmdispred.log"
 touch "$LOG_FILE"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
-
 
 echo "" >> "$LOG_FILE"
 log "=========================================================="
@@ -164,61 +163,58 @@ log "=========================================================="
 log "Input FASTA: $input_fasta"
 log "Output Dir: $output_dir_path"
 log "Features Dir: $features_dir"
-log "Models to run: ${models[*]}" 
+log "Models to run: ${models[*]}"
 
 # ================================================================
-# 5. Run feature extraction (once for all models)
+# 5. Feature extraction
 # ================================================================
-cd scripts
+cd "$SCRIPT_DIR/scripts"
 
 log "→ Extracting DisPredict3.0 features..."
-./run_Dispredict3.sh "$input_fasta" "../$features_dir/Dispredict3.0" 2>&1 | tee -a "$LOG_FILE"
+./run_Dispredict3.sh "$input_fasta" "$features_dir/Dispredict3.0" 2>&1 | tee -a "$LOG_FILE"
 
 log "→ Generating ESM2 embeddings..."
-mkdir -p ../"$features_dir"/ESM2
+mkdir -p "$features_dir/ESM2"
 "$localpythonPath" run_ESM2.py \
     --fasta_filepath "$input_fasta" \
-    --output_path ../"$features_dir"/ESM2/ 2>&1 | tee -a "$LOG_FILE"
+    --output_path "$features_dir/ESM2/" 2>&1 | tee -a "$LOG_FILE"
 
 # ================================================================
-# 6. Run prediction for each model
+# 6. Prediction
 # ================================================================
 for model in "${models[@]}"; do
     log "================================================="
     log "→ Running $model prediction..."
     log "================================================="
-    
+
     if [[ "$model" == "ESMDisPred-1" || "$model" == "ESMDisPred-2" || "$model" == "ESMDisPred-2PDB" ]]; then
         log "Running ESMDisPred..."
         "$localpythonPath" run_ESMDisPred.py \
             --fasta_filepath "$input_fasta" \
-            --output_path ../"$output_dir_path" \
-            --features_path ../"$features_dir" \
+            --output_path "$output_dir_path" \
+            --features_path "$features_dir" \
             --model "$model" 2>&1 | tee -a "$LOG_FILE"
     else
         log "Running ESMDisPred-DNN"
         "$localpythonPath2" transformer_Inference.py \
             --fasta_filepath "$input_fasta" \
-            --features_path "../$features_dir" \
-            --output_path "../$output_dir_path" \
+            --features_path "$features_dir" \
+            --output_path "$output_dir_path" \
             --model "$model" \
-            --run_dir "../models" 2>&1 | tee -a "$LOG_FILE"
+            --run_dir "$SCRIPT_DIR/models" 2>&1 | tee -a "$LOG_FILE"
     fi
-    
+
     log "→ $model completed."
 done
 
-cd - > /dev/null
+cd "$SCRIPT_DIR"
 
 # ================================================================
-# 7. Cleanup and permissions
+# 7. Cleanup
 # ================================================================
-# chmod -R 777 features 2>/dev/null || true
-# chmod -R 777 outputs 2>/dev/null || true
-
 if [ "$dryRun" == "1" ]; then
     log "[Dry Run Complete] Cleaning temporary directories..."
-    rm -rf features outputs
+    rm -rf "$features_dir" "$output_dir_path"
 fi
 
 log "=========================================================="

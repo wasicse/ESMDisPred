@@ -65,5 +65,5 @@ docker run -it \
   -v "$(pwd)/models":"$ESMpath/models" \
   -v "$(pwd)/requirements.txt":"$ESMpath/requirements.txt" \
   -v "$(pwd)/run_downloadLargeModels.sh":"$ESMpath/run_downloadLargeModels.sh" \
-  wasicse/esmdispred:version2 \
+  wasicse/esmdispred:latest \
   ./run_ESMDisPred.sh "$ESMpath/example/$fasta_filename" outputs "$model_option"
