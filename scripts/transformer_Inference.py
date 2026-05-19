@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from Bio import SeqIO
 import joblib
-from preprocess import preProcess_features  # your classic feature builder
+from preprocess import preProcess_features, sanitize_sequence
 
 warnings.filterwarnings("ignore")
 
@@ -222,7 +222,7 @@ def run_fasta_inference(fasta_path: str, features_path: str, output_path: str, r
     for rec in SeqIO.parse(fasta_path, "fasta"):
         t0 = time.time()
         pid = rec.id.strip()
-        seq = str(rec.seq)
+        seq = sanitize_sequence(str(rec.seq))
         print(f"  - {pid}: length={len(seq)}")
 
         # features
@@ -244,7 +244,8 @@ def run_fasta_inference(fasta_path: str, features_path: str, output_path: str, r
         idx = np.arange(1, L + 1).reshape(-1, 1)
         aa_chars = np.array(list(seq[:L])).reshape(-1, 1)
         prob_str = np.char.mod('%.3f', probs[:L]).reshape(-1, 1)
-        caid_mat = np.hstack([idx, aa_chars, prob_str])
+        pred_str = (probs[:L] >= 0.5).astype(int).reshape(-1, 1).astype(str)
+        caid_mat = np.hstack([idx, aa_chars, prob_str, pred_str])
 
         caid_path = os.path.join(disorder_dir, f"{pid}.caid")
         with open(caid_path, "w") as f:
@@ -264,16 +265,22 @@ def run_fasta_inference(fasta_path: str, features_path: str, output_path: str, r
         combined.to_csv(os.path.join(dnn_root, "predictions.csv"), index=False)
 
     # timings CSV (classic style)
-    timings_path = os.path.join(output_path, f"timings_{model_name if model_name else 'transformer'}.csv")
-    with open(timings_path, "w") as fh:
-        ts = datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
-        print(f"# Running {model_name if model_name else 'transformer'}, started {ts}", file=fh)
-        for pid, ms in zip(seq_ids, times_ms):
-            print(f"{pid},{ms}", file=fh)
+    label = model_name if model_name else "transformer"
+    ts = datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
+
+    def _write_timings(path):
+        with open(path, "w") as fh:
+            print(f"# Running {label}, started {ts}", file=fh)
+            print("sequence,milliseconds", file=fh)
+            for pid, ms in zip(seq_ids, times_ms):
+                print(f"{pid},{ms}", file=fh)
+
+    _write_timings(os.path.join(output_path, f"timings_{label}.csv"))
+    _write_timings(os.path.join(output_path, "timings.csv"))
 
     print(f"→ Per-protein .caid files in: {disorder_dir}")
     print(f"→ Combined predictions: {os.path.join(dnn_root, 'predictions.csv')}")
-    print(f"→ Timings: {timings_path}")
+    print(f"→ Timings: {os.path.join(output_path, 'timings.csv')}")
 
 # ------------------------- CLI -------------------------
 if __name__ == "__main__":

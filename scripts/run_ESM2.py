@@ -15,6 +15,9 @@ import os
 import random
 from pathlib import Path
 
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from preprocess import sanitize_sequence
 warnings.filterwarnings("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  
 np.set_printoptions(precision=3)
@@ -32,11 +35,55 @@ if 'TORCH_HOME' not in os.environ:
 # Also set torch hub directory
 os.environ['TORCH_HUB'] = os.environ['TORCH_HOME']
 
-def extractFeatures(fasta_filepath,output_path):
-    
-    
+def loadPrecomputedEmbeddings(fasta_filepath, embeddings_dir, output_path):
+    """Load pre-computed ESM2 embeddings provided by CAID (.npy or .h5 per protein)."""
+    print("\n","#"*40,"Loading pre-computed ESM2 embeddings...","#"*40, "\n")
+    for record in SeqIO.parse(fasta_filepath, "fasta"):
+        pid = record.id.strip()
+        out_csv = output_path + pid + ".csv"
+        if os.path.exists(out_csv):
+            print(f"Already exists, skipping: {pid}")
+            continue
+
+        npy_path = os.path.join(embeddings_dir, pid + ".npy")
+        h5_path  = os.path.join(embeddings_dir, pid + ".h5")
+
+        if os.path.exists(npy_path):
+            emb = np.load(npy_path)
+            print(f"Loaded .npy for {pid}: shape={emb.shape}")
+        elif os.path.exists(h5_path):
+            import h5py
+            with h5py.File(h5_path, "r") as hf:
+                key = pid if pid in hf else list(hf.keys())[0]
+                emb = hf[key][:]
+            print(f"Loaded .h5 for {pid}: shape={emb.shape}")
+        else:
+            print(f"WARNING: no embedding found for {pid} in {embeddings_dir} — skipping")
+            continue
+
+        np.savetxt(out_csv, emb, delimiter=",")
+        print(f"Saved: {out_csv}")
+
+
+def _save_repr(output_path, pid, arr):
+    np.save(output_path + pid + ".npy", arr)
+
+def _run_batch(model, batch_converter, alphabet, device, layern, batch, output_path):
+    batch_labels, batch_strs, batch_tokens = batch_converter(batch)
+    batch_tokens = batch_tokens.to(device)
+    batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
+    with torch.no_grad():
+        results = model(batch_tokens, repr_layers=[layern], return_contacts=False)
+    token_representations = results["representations"][layern]
+    for j, (pid, _) in enumerate(batch):
+        seq_len = int(batch_lens[j].item()) - 1
+        arr = token_representations[j, 1:seq_len].cpu().numpy()
+        _save_repr(output_path, pid, arr)
+        print(f"  {pid}: shape={arr.shape}")
+
+def extractFeatures(fasta_filepath, output_path, batch_size=4):
     print("\n","#"*40,"Extracting features from ESM-2...","#"*40, "\n")
-    # Prefer GPU but fall back to CPU on low memory or OOM
+
     ESM2_MIN_FREE_GB = 2.0
     if torch.cuda.is_available():
         free_gb = torch.cuda.mem_get_info()[0] / (1024 ** 3)
@@ -45,8 +92,6 @@ def extractFeatures(fasta_filepath,output_path):
         device = torch.device("cpu")
     print("Using device:", device)
 
-    # Load ESM-2 model
-    # model, alphabet = esm.pretrained.esm2_t36_3B_UR50D()
     model, alphabet = esm.pretrained.esm2_t33_650M_UR50D()
     try:
         model = model.to(device)
@@ -55,48 +100,46 @@ def extractFeatures(fasta_filepath,output_path):
         device = torch.device("cpu")
         model = model.to(device)
     batch_converter = alphabet.get_batch_converter()
-    model.eval()  # disables dropout for deterministic results
+    model.eval()
+    layern = 33
 
-    layern= model.embed_tokens.weight.shape[0]
-    layern=33
-    # print("Layer Number:",layern)
-
-    print("Extracting Features...")
-
+    # Collect sequences not yet cached (.npy preferred, .csv accepted as legacy)
+    pending = []
     for record in SeqIO.parse(fasta_filepath, "fasta"):
-        print("Protein ID: ", record.id)
-        pid=record.id.strip()
-        fasta=record.seq
- 
-        # file exists
-        if os.path.exists(output_path+record.id+".csv"):
-            # print("File Exists: ",output_path+record.id+".csv")
-            print("Features already exists ")
+        pid = record.id.strip()
+        if os.path.exists(output_path + pid + ".npy") or os.path.exists(output_path + pid + ".csv"):
+            print(f"  {pid}: cached, skipping")
             continue
-        else:
-            print("File Not Exists: ",output_path+record.id+".csv")
-            print("Sequence length: ", len(fasta))
-            data = [ (pid, fasta)]
+        pending.append((pid, sanitize_sequence(str(record.seq))))
 
-            # Convert data to PyTorch tensors
-            batch_labels, batch_strs, batch_tokens = batch_converter(data)
-            batch_tokens = batch_tokens.to(device)
-            batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
-            
-            # Extract per-residue representations on the selected device.
-            with torch.no_grad():
-                results = model(batch_tokens, repr_layers=[layern], return_contacts=True)
-            token_representations = results["representations"][layern]
+    if not pending:
+        print("All ESM2 features already cached.")
+        return
 
-            # Generate per-sequence representations via averaging
-            # NOTE: token 0 is always a beginning-of-sequence token, so the first residue is token 1.        
-            seq_len = int(batch_lens[0].item()) - 1
-            sequence_representation = token_representations[0, 1:seq_len].cpu().numpy()
-            print("Sequence representation shape:", sequence_representation.shape)
+    # Sort by length — minimises padding within each batch
+    pending.sort(key=lambda x: len(x[1]))
+    print(f"Extracting features for {len(pending)} sequence(s) with batch_size={batch_size}...")
 
-            np.savetxt(output_path+record.id+".csv", sequence_representation, delimiter=",")    
+    for i in range(0, len(pending), batch_size):
+        batch = pending[i:i + batch_size]
+        pids = [p for p, _ in batch]
+        print(f"Batch {i//batch_size + 1}: {pids}")
+        try:
+            _run_batch(model, batch_converter, alphabet, device, layern, batch, output_path)
+        except torch.cuda.OutOfMemoryError:
+            print(f"  GPU OOM on batch size {len(batch)} — retrying one-by-one")
+            torch.cuda.empty_cache()
+            for item in batch:
+                try:
+                    _run_batch(model, batch_converter, alphabet, device, layern, [item], output_path)
+                except torch.cuda.OutOfMemoryError:
+                    print(f"  GPU OOM on single sequence {item[0]} — switching to CPU")
+                    torch.cuda.empty_cache()
+                    model_cpu = model.to("cpu")
+                    _run_batch(model_cpu, batch_converter, alphabet, "cpu", layern, [item], output_path)
+                    model.to(device)
 
-            print("Feature Extraction Complete...\n")       
+    print("Feature Extraction Complete.")       
 
 if __name__ == "__main__":  
     parent_path = str(Path(__file__).resolve().parents[1])
@@ -105,19 +148,21 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-f", "--fasta_filepath", dest="fasta_filepath", help="Path to input fasta.", default=parent_path+'/example/sample.fasta')
     parser.add_option("-o", "--output_path", dest="output_path", help="Path to output.", default=parent_path+'/output/')
+    parser.add_option("-e", "--embeddings_dir", dest="embeddings_dir", help="Directory of pre-computed ESM2 embeddings (.npy or .h5 per protein). Skips running ESM2 if provided.", default=None)
+    parser.add_option("-b", "--batch_size", dest="batch_size", type="int", help="Number of sequences per ESM2 forward pass (default 4). Reduce if GPU OOM.", default=4)
 
     (options, args) = parser.parse_args()
 
-    # print("Dataset Path:",options.fasta_filepath)
-    # print("Output Path:",options.output_path)
-
     fasta_filepath=options.fasta_filepath
     output_path=options.output_path
- 
-    workspace=output_path
-    pathlib.Path(workspace).mkdir(parents=True, exist_ok=True) 
 
-    extractFeatures(fasta_filepath,output_path)
+    workspace=output_path
+    pathlib.Path(workspace).mkdir(parents=True, exist_ok=True)
+
+    if options.embeddings_dir:
+        loadPrecomputedEmbeddings(fasta_filepath, options.embeddings_dir, output_path)
+    else:
+        extractFeatures(fasta_filepath, output_path, batch_size=options.batch_size)
     
 
 

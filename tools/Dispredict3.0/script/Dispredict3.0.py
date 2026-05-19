@@ -128,12 +128,12 @@ def dispredict(fasta_filepath,output_path):
         df_time = pd.DataFrame(columns=['sequence', 'milliseconds'])
         seq=[]
         time_milli=[]  
+        _AMBIGUOUS = {'B':'D','Z':'E','J':'L','U':'C','O':'K','X':'A'}
         for record in SeqIO.parse(fasta_filepath, "fasta"):
             start_time = time.time()
             print("Protein ID: ", record.id)
-            # pid=record.id.split("|")[1].()
             pid=record.id.strip()
-            fasta=record.seq
+            fasta=''.join(_AMBIGUOUS.get(aa.upper(), aa) for aa in str(record.seq))
             # print(pid)
             # print(fasta)
 
@@ -267,17 +267,17 @@ def dispredict(fasta_filepath,output_path):
         df_time['sequence'] = seq
         df_time['milliseconds'] = time_milli
 
-        # print current directory
-        print(os.getcwd())
-        filecsv=open("../../../outputs/timings_"+model+".csv", "w")
-        
-        timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
-        
-        print("# Running "+model+", started "+timenow,file=filecsv)
-        
-        for row in df_time.values:
-                print(str(row[0])+","+str(row[1]),file=filecsv)
-        filecsv.close()
+        timenow = datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
+
+        def _write_timings(path):
+            with open(path, "w") as f:
+                print(f"# Running {model}, started {timenow}", file=f)
+                print("sequence,milliseconds", file=f)
+                for row in df_time.values:
+                    print(f"{row[0]},{row[1]}", file=f)
+
+        _write_timings(output_path + f"/timings_{model}.csv")
+        _write_timings(output_path + "/timings.csv")
 
 
 

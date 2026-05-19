@@ -28,3 +28,7 @@ tools/Dispredict3.0/tools/fldpnn/programs/NNpackage/tmp*
 .cache
 models/best.pt
 outputs
+figures
+scripts/plot_disorder_comparison.py
+esmdispred.sif
+delete

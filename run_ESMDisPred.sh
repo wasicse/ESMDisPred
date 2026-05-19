@@ -18,7 +18,20 @@ CALLER_DIR="$(pwd)"   # captured before any cd, used to resolve relative user pa
 export TORCH_HOME="$SCRIPT_DIR/largeModels"
 export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:${LD_LIBRARY_PATH:-}"
 
-dryRun=$1
+# ----------------------------------------------------------------
+# Parse --clean flag (accepted anywhere before positional args)
+# ----------------------------------------------------------------
+CLEAN=0
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --clean) CLEAN=1 ;;
+        *)       ARGS+=("$arg") ;;
+    esac
+done
+set -- "${ARGS[@]+"${ARGS[@]}"}"
+
+dryRun=${1:-}
 
 echo "================================================="
 echo " ESMDisPred - Intrinsically Disordered Protein Prediction"
@@ -54,8 +67,11 @@ if [ "$dryRun" == "1" ]; then
 # 2. Normal execution mode
 # ================================================================
 else
-    if [ -z "$1" ] || [ -z "$2" ]; then
-        echo "Usage: $0 <input_fasta> <output_dir> [model_option]"
+    if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
+        echo "Usage: $0 [--clean] <input_fasta> <output_dir> [model_option] [embeddings_dir]"
+        echo ""
+        echo "Flags:"
+        echo "  --clean               Remove features cache and output dir before running"
         echo ""
         echo "Model options:"
         echo "  1 or ESMDisPred-1     - DisPredict3.0 + ESM1"
@@ -75,6 +91,21 @@ else
     [[ "$output_dir_path" == /* ]] || output_dir_path="$CALLER_DIR/$output_dir_path"
 
     model_choice=${3:-}
+    embeddings_dir=${4:-}   # optional: pre-computed ESM2 embeddings dir (CAID)
+
+    # ----------------------------------------------------------------
+    # --clean: wipe features cache and output directory before running
+    # ----------------------------------------------------------------
+    if [ "$CLEAN" == "1" ]; then
+        echo "→ --clean: removing previous run files..."
+        rm -rf "$SCRIPT_DIR/features"
+        if [ -d "$output_dir_path" ]; then
+            rm -rf "$output_dir_path"
+            echo "  Removed: $output_dir_path"
+        fi
+        echo "  Removed: $SCRIPT_DIR/features"
+        echo "  Note: largeModels/ is preserved (re-download would take too long)"
+    fi
 
     localpythonPath="$SCRIPT_DIR/.venv/bin/python"
     localpythonPath2="$SCRIPT_DIR/.venv/bin/python"
@@ -175,9 +206,12 @@ log "→ Extracting DisPredict3.0 features..."
 
 log "→ Generating ESM2 embeddings..."
 mkdir -p "$features_dir/ESM2"
-"$localpythonPath" run_ESM2.py \
-    --fasta_filepath "$input_fasta" \
-    --output_path "$features_dir/ESM2/" 2>&1 | tee -a "$LOG_FILE"
+ESM2_ARGS="--fasta_filepath $input_fasta --output_path $features_dir/ESM2/"
+if [ -n "${embeddings_dir:-}" ]; then
+    log "  Using pre-computed embeddings from: $embeddings_dir"
+    ESM2_ARGS="$ESM2_ARGS --embeddings_dir $embeddings_dir"
+fi
+"$localpythonPath" run_ESM2.py $ESM2_ARGS 2>&1 | tee -a "$LOG_FILE"
 
 # ================================================================
 # 6. Prediction

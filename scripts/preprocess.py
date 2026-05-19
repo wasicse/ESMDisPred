@@ -2,6 +2,12 @@ import os
 import pandas as pd
 import numpy as np
 
+# CAID requirement: handle ambiguous amino acid characters without crashing
+_AMBIGUOUS = {'B': 'D', 'Z': 'E', 'J': 'L', 'U': 'C', 'O': 'K', 'X': 'A'}
+
+def sanitize_sequence(seq: str) -> str:
+    return ''.join(_AMBIGUOUS.get(aa.upper(), aa) for aa in seq)
+
 def applyWindowsing(window_size, data,columnName):
     df=pd.DataFrame(data, columns=[columnName])
     for t in range(window_size, 0,-1):
@@ -54,10 +60,15 @@ def preProcess_features(features_path,pid,method):
     ESM2StatsColumns=["ESM2650_mean", "ESM2650_std", "ESM2650_max", "ESM2650_min", "ESM2650_median", "ESM2650_skew", "ESM2650_kurtosis", "ESM2650_kurt", "ESM2650_var", "ESM2650_sem", "ESM2650_quantile"]
        
     if method in ["ESMDisPred-2","ESMDisPred-2PDB","ESMDisPred-DNN"]:
-        if os.path.exists(features_path+"/ESM2/"+pid+'.csv'):
-            df_ESM=pd.read_csv(features_path+"/ESM2/"+pid+'.csv',header=None)
-            df_ESM.columns=ColumnName_ESM
-        else:  
+        npy_path = features_path+"/ESM2/"+pid+'.npy'
+        csv_path = features_path+"/ESM2/"+pid+'.csv'
+        if os.path.exists(npy_path):
+            df_ESM = pd.DataFrame(np.load(npy_path))
+            df_ESM.columns = ColumnName_ESM
+        elif os.path.exists(csv_path):
+            df_ESM = pd.read_csv(csv_path, header=None)
+            df_ESM.columns = ColumnName_ESM
+        else:
             print(pid, file=open("missing_features_ESM2.txt", "a")) 
                     
         mergeData=pd.concat([mergeData,df_ESM],axis=1)    

@@ -1,12 +1,21 @@
 #!/bin/bash
 set -e
 
-input_fasta=$1
-output_dir=$2
-model_option=${3:-}  # Optional 3rd parameter for model selection
+CLEAN_FLAG=""
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --clean) CLEAN_FLAG="--clean" ;;
+        *)       ARGS+=("$arg") ;;
+    esac
+done
+
+input_fasta=${ARGS[0]:-}
+output_dir=${ARGS[1]:-}
+model_option=${ARGS[2]:-}
 
 if [ -z "$input_fasta" ] || [ -z "$output_dir" ]; then
-    echo "Usage: $0 <input_fasta> <output_dir> [model_option]"
+    echo "Usage: $0 [--clean] <input_fasta> <output_dir> [model_option]"
     echo ""
     echo "Example (interactive):"
     echo "  $0 \$(pwd)/example/sample.fasta outputs"
@@ -33,13 +42,33 @@ else
     echo "Model option: Interactive (will prompt)"
 fi
 
+ESMpath="/opt/ESMDisPred"
+fasta_filename=$(basename "$input_fasta")
+
+# Resolve output_dir to absolute path early (needed for --clean and bind mount)
+if [[ "$output_dir" = /* ]]; then
+    output_dir_abs="$output_dir"
+else
+    output_dir_abs="$(pwd)/$output_dir"
+fi
+
+# --clean: wipe host-side caches before bind-mounting them into Docker.
+# We EMPTY the directories rather than deleting them to preserve directory
+# inodes — NFS-mounted home directories return ESTALE (stale file handle)
+# inside the container when a directory is deleted and recreated with a new
+# inode between the rm and the docker run.
+if [ -n "$CLEAN_FLAG" ]; then
+    echo "→ --clean: removing previous run files (host-side)..."
+    mkdir -p "$(pwd)/features" "$output_dir_abs"
+    find "$(pwd)/features" -mindepth 1 -delete 2>/dev/null || true
+    find "$output_dir_abs"  -mindepth 1 -delete 2>/dev/null || true
+    echo "  Cleared: $(pwd)/features"
+    echo "  Cleared: $output_dir_abs"
+    echo "  Note: largeModels/ is preserved"
+fi
+
 # Create necessary directories
 mkdir -p "$output_dir" features largeModels
-
-ESMpath="/opt/ESMDisPred"
-
-# Get the filename from input path
-fasta_filename=$(basename "$input_fasta")
 
 # Handle both relative and absolute paths for output_dir
 if [[ "$output_dir" = /* ]]; then
@@ -50,7 +79,9 @@ else
     output_dir_abs="$(pwd)/$output_dir"
 fi
 
-docker run -it \
+TTY_FLAG=""; [ -t 0 ] && TTY_FLAG="-t"
+docker run -i $TTY_FLAG \
+  $(docker info 2>/dev/null | grep -q "Runtimes.*nvidia" && echo "--gpus all") \
   --user $(id -u):$(id -g) \
   -e HOME=/opt/ESMDisPred \
   -e XDG_CACHE_HOME=/opt/ESMDisPred/.cache \
@@ -64,6 +95,7 @@ docker run -it \
   -v "$(pwd)/scripts/run_ESMDisPred.py":"$ESMpath/scripts/run_ESMDisPred.py" \
   -v "$(pwd)/scripts/run_ESM2.py":"$ESMpath/scripts/run_ESM2.py" \
   -v "$(pwd)/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py" \
+  -v "$(pwd)/tools/Dispredict3.0/tools/fldpnn/DisoComb.sh":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/DisoComb.sh" \
   -v "$(pwd)/scripts/transformer_Inference.py":"$ESMpath/scripts/transformer_Inference.py" \
   -v "$(pwd)/scripts/preprocess.py":"$ESMpath/scripts/preprocess.py" \
   -v "$(pwd)/models":"$ESMpath/models" \

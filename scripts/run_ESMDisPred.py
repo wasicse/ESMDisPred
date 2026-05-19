@@ -18,7 +18,7 @@ import time
 import datetime
 import csv
     
-from preprocess import preProcess_features
+from preprocess import preProcess_features, sanitize_sequence
 warnings.filterwarnings("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  
 
@@ -57,8 +57,8 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
 
         print("Protein ID: ", record.id)
         pid=record.id.strip()
-        fasta=record.seq
-        protein_sequence = [str(fasta)]   
+        fasta=sanitize_sequence(str(record.seq))
+        protein_sequence = [fasta]   
         protein_sequence= np.array(list(protein_sequence[0]) ).reshape(-1,1).astype(str)
         
         X = preProcess_features(feature_path,pid,model)
@@ -71,15 +71,15 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
         np_index=np.arange(1, len(proba)+1).reshape(-1,1)
     
      
-        np_proba=[f'{i:.3f}' for i in proba[:,1]]
-     
-        np_proba=np.array(np_proba).reshape(-1,1)
-        result=np.hstack((np_index,protein_sequence, np_proba))  #,pred.reshape(-1,1)
+        proba_vals = proba[:,1]
+        np_proba = np.array([f'{i:.3f}' for i in proba_vals]).reshape(-1,1)
+        np_pred = (proba_vals >= threshold).astype(int).reshape(-1,1).astype(str)
+        result=np.hstack((np_index, protein_sequence, np_proba, np_pred))
              
         with open(model_output_dir / f"{pid}.caid", "w") as f:
             f.write((">"+pid+"\n"))
-            fmt = '%s','%s', '%s' #, '%s'
-            np.savetxt(f, result, delimiter='\t',fmt=fmt)           
+            fmt = '%s', '%s', '%s', '%s'
+            np.savetxt(f, result, delimiter='\t',fmt=fmt)
 
         print("--- Total Time (ms) ---" , int((time.time() - start_time)*1000))
         print("\n")
@@ -89,15 +89,17 @@ def ESMDisPred(fasta_filepath,output_path,feature_path,model):
     df_time['sequence'] = seq
     df_time['milliseconds'] = time_milli
 
-    filecsv=open(output_dir / f"timings_{model}.csv", "w")
-    
-    timenow=datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
-    
-    print("# Running "+model+", started "+timenow,file=filecsv)
-    
-    for row in df_time.values:
-            print(str(row[0])+","+str(row[1]),file=filecsv)
-    filecsv.close()
+    timenow = datetime.datetime.now().astimezone().strftime("%a %b %d %H:%M:%S %Z %Y")
+
+    def _write_timings(path):
+        with open(path, "w") as f:
+            print(f"# Running {model}, started {timenow}", file=f)
+            print("sequence,milliseconds", file=f)
+            for row in df_time.values:
+                print(f"{row[0]},{row[1]}", file=f)
+
+    _write_timings(output_dir / f"timings_{model}.csv")
+    _write_timings(output_dir / "timings.csv")
     # print(df_time)
     
     print("ESMDisPred prediction end...")

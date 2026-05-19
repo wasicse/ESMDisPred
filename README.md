@@ -128,72 +128,54 @@ cd ESMDisPred
 
 ---
 
-## 3. Singularity (HPC)
+## 3. Singularity / Apptainer (HPC)
 
-Singularity is common on HPC clusters where Docker is unavailable. No root required to run.
+HPC clusters typically have Singularity or Apptainer instead of Docker. The helper script `run_ESMDisPred_Singularity.sh` handles both automatically and builds the `.sif` image from the published Docker image on first run — no root access required.
 
-### Option A — Build from the definition file
+### Step 1 — Clone the repo
 
 ```bash
 git clone https://github.com/wasicse/ESMDisPred.git
 cd ESMDisPred
-
-# Requires root (or --fakeroot on supported clusters)
-sudo singularity build ESMDispS.sif ESMDispS.def
 ```
 
-### Option B — Convert the Docker image (no root needed)
+### Step 2 — Download large models
 
 ```bash
-singularity pull esmdispred.sif docker://wasicse/esmdispred:latest
-```
-
-### Run
-
-The container's pipeline is at `/opt/ESMDisPred/run_ESMDisPred.sh`. Bind your data directories and pass arguments directly:
-
-```bash
-# Download large models locally first
 ./run_downloadLargeModels.sh
-
-mkdir -p outputs
-
-singularity exec --writable-tmpfs \
-  -B "$(pwd)/example/sample.fasta:/opt/ESMDisPred/example/sample.fasta" \
-  -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
-  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs" \
-  ESMDispS.sif \
-  /opt/ESMDisPred/run_ESMDisPred.sh \
-    /opt/ESMDisPred/example/sample.fasta \
-    /opt/ESMDisPred/outputs \
-    3
 ```
 
-> **Paths inside the container** must use the container-side mount point (`/opt/ESMDisPred/...`), not the host path.
-
-**Using your own FASTA file:**
+### Step 3 — Run a prediction
 
 ```bash
-mkdir -p outputs
+# Non-interactive (recommended on HPC)
+./run_ESMDisPred_Singularity.sh "$(pwd)/example/sample.fasta" outputs 4        # ESMDisPred-DNN
+./run_ESMDisPred_Singularity.sh "$(pwd)/example/sample.fasta" outputs 3        # ESMDisPred-2PDB
+./run_ESMDisPred_Singularity.sh "$(pwd)/example/sample.fasta" outputs all      # all models
 
-singularity exec --writable-tmpfs \
-  -B "/path/to/your/proteins.fasta:/opt/ESMDisPred/input/proteins.fasta" \
-  -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
-  -B "$(pwd)/outputs:/opt/ESMDisPred/outputs" \
-  ESMDispS.sif \
-  /opt/ESMDisPred/run_ESMDisPred.sh \
-    /opt/ESMDisPred/input/proteins.fasta \
-    /opt/ESMDisPred/outputs \
-    all
+# Interactive (prompts for model selection)
+./run_ESMDisPred_Singularity.sh "$(pwd)/example/sample.fasta" outputs
 ```
+
+On first run the script pulls `wasicse/esmdispred:latest` from Docker Hub and saves it as `esmdispred.sif` (~10 GB). Subsequent runs reuse the cached `.sif`.
+
+> **Custom .sif path** — pass it as the optional 4th argument if you want to store the image elsewhere (e.g. a shared project directory on the cluster):
+> ```bash
+> ./run_ESMDisPred_Singularity.sh input.fasta outputs 4 /scratch/shared/esmdispred.sif
+> ```
+
+> **Module load** — if `apptainer`/`singularity` is not in PATH by default, load it first:
+> ```bash
+> module load apptainer   # or: module load singularity
+> ```
 
 **Interactive shell inside the container:**
 
 ```bash
-singularity shell --writable-tmpfs \
+singularity shell \
   -B "$(pwd)/largeModels:/opt/ESMDisPred/largeModels" \
   -B "$(pwd)/outputs:/opt/ESMDisPred/outputs" \
-  ESMDispS.sif
+  esmdispred.sif
 
 # inside the container:
 cd /opt/ESMDisPred

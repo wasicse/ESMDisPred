@@ -11,6 +11,11 @@ downloads=0
 
 download_file() {
     if [ ! -f "$1" ]; then
+        if ! wget -q --spider --timeout=10 "$2" 2>/dev/null; then
+            echo "  WARNING: offline or unreachable — cannot download $1"
+            echo "           Mount or copy the file manually to: $(pwd)/$1"
+            return 0
+        fi
         echo "  Downloading: $1"
         wget -q "$2" -O "$1"
         downloads=$((downloads + 1))
