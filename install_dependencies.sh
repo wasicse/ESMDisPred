@@ -45,7 +45,8 @@ if ! ldconfig -p 2>/dev/null | grep -q "libidn\.so\.11"; then
         if [ -w "$(dirname "$libpath")" ]; then
             ln -fs "$libpath" "$target"
         else
-            sudo ln -fs "$libpath" "$target"
+            sudo ln -fs "$libpath" "$target" 2>/dev/null || \
+                echo "  (skipping system symlink — sudo unavailable; lib/libidn.so.11 in project root used instead)"
         fi
         ldconfig 2>/dev/null || sudo ldconfig 2>/dev/null || true
     else
