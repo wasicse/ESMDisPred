@@ -69,8 +69,12 @@ def preProcess_features(features_path,pid,method):
             df_ESM = pd.read_csv(csv_path, header=None)
             df_ESM.columns = ColumnName_ESM
         else:
-            print(pid, file=open("missing_features_ESM2.txt", "a")) 
-                    
+            print(pid, file=open("missing_features_ESM2.txt", "a"))
+            # Without this the next line raises an opaque NameError on df_ESM.
+            raise FileNotFoundError(
+                f"Missing ESM2 features for {pid}: expected {npy_path} or {csv_path}")
+
+
         mergeData=pd.concat([mergeData,df_ESM],axis=1)    
         
         mergeData["ESM2650_mean"]=df_ESM.mean(axis=1)

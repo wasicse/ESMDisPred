@@ -61,4 +61,10 @@ print('PyTorch:', torch.__version__); \
 print('CUDA available:', torch.cuda.is_available()); \
 print('All imports OK')"
 
+# Runtime scratch directories. A standalone `docker run --user $(id -u):$(id -g)`
+# with no bind mounts must be able to write these, and /opt/ESMDisPred itself is
+# root-owned 755. The wrapper scripts bind-mount over them, so this only affects
+# direct image use — which is how CAID runs it.
+RUN mkdir -p features outputs .config && chmod 777 features outputs .config && chmod -R 777 .cache
+
 ENTRYPOINT ["/bin/bash"]

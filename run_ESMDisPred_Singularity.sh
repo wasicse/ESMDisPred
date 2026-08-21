@@ -5,7 +5,7 @@
 # Subsequent runs reuse the cached .sif.
 #
 # Usage:
-#   ./run_ESMDisPred_Singularity.sh <input_fasta> <output_dir> [model_option] [sif_path]
+#   ./run_ESMDisPred_Singularity.sh [--clean] [--embeddings <dir>] <input_fasta> <output_dir> [model_option] [sif_path]
 #
 # model_option:
 #   1 / ESMDisPred-1     DisPredict3.0 + ESM1
@@ -22,12 +22,19 @@ set -eo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 CLEAN_FLAG=""
+embeddings_dir=""
 ARGS=()
-for arg in "$@"; do
-    case "$arg" in
-        --clean) CLEAN_FLAG="--clean" ;;
-        *)       ARGS+=("$arg") ;;
+# --embeddings takes a value, so it cannot be a positional: the 4th positional
+# slot is already sif_path, and passing a directory there would make the script
+# treat it as a missing .sif and attempt a ~10 GB pull into it.
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --clean)      CLEAN_FLAG="--clean" ;;
+        --embeddings) shift; embeddings_dir="${1:-}" ;;
+        --embeddings=*) embeddings_dir="${1#*=}" ;;
+        *)            ARGS+=("$1") ;;
     esac
+    shift
 done
 
 input_fasta="${ARGS[0]:-}"
@@ -36,13 +43,15 @@ model_option="${ARGS[2]:-}"
 sif_path="${ARGS[3]:-$SCRIPT_DIR/esmdispred.sif}"
 
 ESMpath="/opt/ESMDisPred"
-DOCKER_IMAGE="wasicse/esmdispred:latest"
+DOCKER_IMAGE="${ESMDISPRED_IMAGE:-wasicse/esmdispred:latest}"
 
 # ----------------------------------------------------------------
 # Usage check
 # ----------------------------------------------------------------
 if [ -z "$input_fasta" ] || [ -z "$output_dir" ]; then
-    echo "Usage: $0 [--clean] <input_fasta> <output_dir> [model_option] [sif_path]"
+    echo "Usage: $0 [--clean] [--embeddings <dir>] <input_fasta> <output_dir> [model_option] [sif_path]"
+    echo ""
+    echo "  --embeddings <dir>  Directory of pre-computed ESM2 embeddings (.npy/.h5 per protein, CAID)"
     echo ""
     echo "Example (non-interactive):"
     echo "  $0 \$(pwd)/example/sample.fasta outputs 4"
@@ -63,6 +72,20 @@ fi
 # ----------------------------------------------------------------
 [[ "$input_fasta" == /* ]] || input_fasta="$(pwd)/$input_fasta"
 [[ "$output_dir"  == /* ]] || output_dir="$(pwd)/$output_dir"
+
+# Pre-computed ESM2 embeddings (CAID): bound read-only, passed as the 4th
+# argument to run_ESMDisPred.sh using its container-side path.
+EMB_BIND=()
+EMB_ARG=""
+if [ -n "$embeddings_dir" ]; then
+    [[ "$embeddings_dir" == /* ]] || embeddings_dir="$(pwd)/$embeddings_dir"
+    if [ ! -d "$embeddings_dir" ]; then
+        echo "ERROR: --embeddings is not a directory: $embeddings_dir"
+        exit 1
+    fi
+    EMB_BIND=(-B "$embeddings_dir":"$ESMpath/embeddings":ro)
+    EMB_ARG="$ESMpath/embeddings"
+fi
 
 # ----------------------------------------------------------------
 # Detect Apptainer or Singularity (HPC clusters vary)
@@ -155,12 +178,15 @@ $SIF_CMD exec --nv $WRITABLE_OPT \
     -B "$SCRIPT_DIR/scripts/run_ESM2.py":"$ESMpath/scripts/run_ESM2.py" \
     -B "$SCRIPT_DIR/scripts/transformer_Inference.py":"$ESMpath/scripts/transformer_Inference.py" \
     -B "$SCRIPT_DIR/scripts/preprocess.py":"$ESMpath/scripts/preprocess.py" \
+    -B "$SCRIPT_DIR/tools/Dispredict3.0/script/Dispredict3.0.py":"$ESMpath/tools/Dispredict3.0/script/Dispredict3.0.py" \
     -B "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py" \
     -B "$SCRIPT_DIR/tools/Dispredict3.0/tools/fldpnn/DisoComb.sh":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/DisoComb.sh" \
     -B "$SCRIPT_DIR/models":"$ESMpath/models" \
     -B "$SCRIPT_DIR/requirements.txt":"$ESMpath/requirements.txt" \
+    "${EMB_BIND[@]}" \
     "$sif_path" \
     "$ESMpath/run_ESMDisPred.sh" \
         "$ESMpath/example/$fasta_filename" \
         "$ESMpath/outputs" \
-        "$model_option"
+        "$model_option" \
+        "$EMB_ARG"

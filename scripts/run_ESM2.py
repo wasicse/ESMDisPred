@@ -38,12 +38,20 @@ os.environ['TORCH_HUB'] = os.environ['TORCH_HOME']
 def loadPrecomputedEmbeddings(fasta_filepath, embeddings_dir, output_path):
     """Load pre-computed ESM2 embeddings provided by CAID (.npy or .h5 per protein)."""
     print("\n","#"*40,"Loading pre-computed ESM2 embeddings...","#"*40, "\n")
+    missing = []
     for record in SeqIO.parse(fasta_filepath, "fasta"):
         pid = record.id.strip()
+        seq_len = len(sanitize_sequence(str(record.seq)))
         out_csv = output_path + pid + ".csv"
-        if os.path.exists(out_csv):
-            print(f"Already exists, skipping: {pid}")
-            continue
+        # Same ID-keyed cache hazard as extractFeatures: only skip when the
+        # cached rows actually match this sequence.
+        cached_rows = _cached_rows(output_path, pid)
+        if cached_rows is not None:
+            if cached_rows == seq_len:
+                print(f"Already exists, skipping: {pid}")
+                continue
+            print(f"  {pid}: STALE CACHE ({cached_rows} rows, sequence is "
+                  f"{seq_len}) — reloading from {embeddings_dir}")
 
         npy_path = os.path.join(embeddings_dir, pid + ".npy")
         h5_path  = os.path.join(embeddings_dir, pid + ".h5")
@@ -59,14 +67,56 @@ def loadPrecomputedEmbeddings(fasta_filepath, embeddings_dir, output_path):
             print(f"Loaded .h5 for {pid}: shape={emb.shape}")
         else:
             print(f"WARNING: no embedding found for {pid} in {embeddings_dir} — skipping")
+            missing.append(pid)
+            continue
+
+        # Downstream feature assembly concatenates this row-wise with the
+        # DisPredict3.0 features, so the row count MUST equal the sequence
+        # length. ESM embeddings that still carry BOS/EOS have L+2 rows;
+        # trim those, and refuse anything else rather than silently
+        # producing off-by-one predictions.
+        emb = np.asarray(emb)
+        if emb.ndim != 2:
+            print(f"ERROR: {pid} embedding has {emb.ndim} dims (expected 2) — skipping")
+            missing.append(pid)
+            continue
+        if emb.shape[0] == seq_len + 2:
+            print(f"  {pid}: {emb.shape[0]} rows for a {seq_len}-residue sequence "
+                  f"— trimming BOS/EOS")
+            emb = emb[1:-1]
+        elif emb.shape[0] != seq_len:
+            print(f"ERROR: {pid} embedding has {emb.shape[0]} rows but sequence is "
+                  f"{seq_len} residues — skipping (cannot align)")
+            missing.append(pid)
             continue
 
         np.savetxt(out_csv, emb, delimiter=",")
         print(f"Saved: {out_csv}")
 
+    if missing:
+        shown = ", ".join(missing[:20]) + (" ..." if len(missing) > 20 else "")
+        print(f"\nWARNING: {len(missing)} sequence(s) had no usable embedding: {shown}")
+
 
 def _save_repr(output_path, pid, arr):
     np.save(output_path + pid + ".npy", arr)
+
+def _cached_rows(output_path, pid):
+    """Row count of a cached embedding for pid, or None if not cached/unreadable."""
+    npy_path = output_path + pid + ".npy"
+    if os.path.exists(npy_path):
+        try:
+            return int(np.load(npy_path, mmap_mode="r").shape[0])
+        except Exception:
+            return None
+    csv_path = output_path + pid + ".csv"
+    if os.path.exists(csv_path):
+        try:
+            with open(csv_path) as fh:
+                return sum(1 for line in fh if line.strip())
+        except Exception:
+            return None
+    return None
 
 def _run_batch(model, batch_converter, alphabet, device, layern, batch, output_path):
     batch_labels, batch_strs, batch_tokens = batch_converter(batch)
@@ -103,14 +153,22 @@ def extractFeatures(fasta_filepath, output_path, batch_size=4):
     model.eval()
     layern = 33
 
-    # Collect sequences not yet cached (.npy preferred, .csv accepted as legacy)
+    # Collect sequences not yet cached (.npy preferred, .csv accepted as legacy).
+    # The cache is keyed on protein ID alone, so an ID reused for a different
+    # sequence (common across CAID rounds) would otherwise silently reuse the
+    # wrong embedding — validate the row count against the sequence length.
     pending = []
     for record in SeqIO.parse(fasta_filepath, "fasta"):
         pid = record.id.strip()
-        if os.path.exists(output_path + pid + ".npy") or os.path.exists(output_path + pid + ".csv"):
-            print(f"  {pid}: cached, skipping")
-            continue
-        pending.append((pid, sanitize_sequence(str(record.seq))))
+        seq = sanitize_sequence(str(record.seq))
+        cached_rows = _cached_rows(output_path, pid)
+        if cached_rows is not None:
+            if cached_rows == len(seq):
+                print(f"  {pid}: cached, skipping")
+                continue
+            print(f"  {pid}: STALE CACHE ({cached_rows} rows, sequence is "
+                  f"{len(seq)}) — regenerating")
+        pending.append((pid, seq))
 
     if not pending:
         print("All ESM2 features already cached.")

@@ -5,3 +5,13 @@ features/
 largeModels/
 outputs/
 dataset/
+
+# Build artifacts and scratch dirs — must not be baked into the image.
+# esmdispred.sif alone is 4.5 GB and would otherwise land in the layer.
+*.sif
+delete/
+figures/
+.cache/
+.agents/
+__pycache__/
+**/__pycache__/

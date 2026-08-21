@@ -13,9 +13,10 @@ done
 input_fasta=${ARGS[0]:-}
 output_dir=${ARGS[1]:-}
 model_option=${ARGS[2]:-}
+embeddings_dir=${ARGS[3]:-}   # optional: pre-computed ESM2 embeddings dir (CAID)
 
 if [ -z "$input_fasta" ] || [ -z "$output_dir" ]; then
-    echo "Usage: $0 [--clean] <input_fasta> <output_dir> [model_option]"
+    echo "Usage: $0 [--clean] <input_fasta> <output_dir> [model_option] [embeddings_dir]"
     echo ""
     echo "Example (interactive):"
     echo "  $0 \$(pwd)/example/sample.fasta outputs"
@@ -24,6 +25,9 @@ if [ -z "$input_fasta" ] || [ -z "$output_dir" ]; then
     echo "  $0 \$(pwd)/example/sample.fasta outputs 3"
     echo "  $0 \$(pwd)/example/sample.fasta outputs ESMDisPred-2PDB"
     echo "  $0 \$(pwd)/example/sample.fasta outputs all"
+    echo ""
+    echo "Example (CAID pre-computed ESM2 embeddings):"
+    echo "  $0 \$(pwd)/example/sample.fasta outputs 3 \$(pwd)/embeddings"
     echo ""
     echo "Model options:"
     echo "  1 or ESMDisPred-1     - DisPredict3.0 + ESM1"
@@ -43,6 +47,9 @@ else
 fi
 
 ESMpath="/opt/ESMDisPred"
+# Override to test a candidate build or pin a release, e.g.
+#   ESMDISPRED_IMAGE=wasicse/esmdispred:caid4 ./run_ESMDisPred_Docker.sh ...
+DOCKER_IMAGE="${ESMDISPRED_IMAGE:-wasicse/esmdispred:latest}"
 fasta_filename=$(basename "$input_fasta")
 
 # Resolve output_dir to absolute path early (needed for --clean and bind mount)
@@ -79,6 +86,21 @@ else
     output_dir_abs="$(pwd)/$output_dir"
 fi
 
+# Pre-computed ESM2 embeddings (CAID): bind the host directory read-only and
+# hand run_ESMDisPred.sh the container-side path as its 4th argument.
+EMB_MOUNT=()
+EMB_ARG=""
+if [ -n "$embeddings_dir" ]; then
+    [[ "$embeddings_dir" = /* ]] || embeddings_dir="$(pwd)/$embeddings_dir"
+    if [ ! -d "$embeddings_dir" ]; then
+        echo "ERROR: embeddings_dir is not a directory: $embeddings_dir"
+        exit 1
+    fi
+    EMB_MOUNT=(-v "$embeddings_dir":"$ESMpath/embeddings":ro)
+    EMB_ARG="$ESMpath/embeddings"
+    echo "Embeddings dir: $embeddings_dir"
+fi
+
 TTY_FLAG=""; [ -t 0 ] && TTY_FLAG="-t"
 docker run -i $TTY_FLAG \
   $(docker info 2>/dev/null | grep -q "Runtimes.*nvidia" && echo "--gpus all") \
@@ -94,6 +116,7 @@ docker run -i $TTY_FLAG \
   -v "$(pwd)/scripts/run_Dispredict3.sh":"$ESMpath/scripts/run_Dispredict3.sh" \
   -v "$(pwd)/scripts/run_ESMDisPred.py":"$ESMpath/scripts/run_ESMDisPred.py" \
   -v "$(pwd)/scripts/run_ESM2.py":"$ESMpath/scripts/run_ESM2.py" \
+  -v "$(pwd)/tools/Dispredict3.0/script/Dispredict3.0.py":"$ESMpath/tools/Dispredict3.0/script/Dispredict3.0.py" \
   -v "$(pwd)/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/run_flDPnn.py" \
   -v "$(pwd)/tools/Dispredict3.0/tools/fldpnn/DisoComb.sh":"$ESMpath/tools/Dispredict3.0/tools/fldpnn/DisoComb.sh" \
   -v "$(pwd)/scripts/transformer_Inference.py":"$ESMpath/scripts/transformer_Inference.py" \
@@ -101,5 +124,6 @@ docker run -i $TTY_FLAG \
   -v "$(pwd)/models":"$ESMpath/models" \
   -v "$(pwd)/requirements.txt":"$ESMpath/requirements.txt" \
   -v "$(pwd)/run_downloadLargeModels.sh":"$ESMpath/run_downloadLargeModels.sh" \
-  wasicse/esmdispred:latest \
-  ./run_ESMDisPred.sh "$ESMpath/example/$fasta_filename" outputs "$model_option"
+  "${EMB_MOUNT[@]}" \
+  "$DOCKER_IMAGE" \
+  ./run_ESMDisPred.sh "$ESMpath/example/$fasta_filename" outputs "$model_option" "$EMB_ARG"
